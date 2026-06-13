@@ -798,6 +798,11 @@ footer{position:relative;z-index:1;display:flex;align-items:center;justify-conte
         <div class="adm-field-row"><label>Descripción</label><textarea id="tf_gal_desc"></textarea></div>
       </div>
       <div class="adm-section">
+        <p class="adm-section-title">Categorías de la Galería (agregar, editar, eliminar y reordenar)</p>
+        <div id="admGalCats"></div>
+        <button class="adm-btn adm-btn-add" style="margin-top:1rem;" onclick="addGalCategory()">+ Agregar Categoría</button>
+      </div>
+      <div class="adm-section">
         <p class="adm-section-title">Metadatos de imágenes de galería (caption y categoría)</p>
         <div id="admGalMeta"></div>
       </div>
@@ -1583,8 +1588,8 @@ function buildAdminPanel() {
   document.getElementById('admHeroImgs').innerHTML = heroDefs.map(buildSlotHTML).join('') +
     (heroDefs.length ? '' : '<p style="color:rgba(245,238,216,0.3);font-family:\'EB Garamond\',serif;font-style:italic;font-size:0.9rem;">No hay slides aún. Agrega uno.</p>');
 
-  const cats = ['decoracion','boda','quinces','otras'];
-  const catDefs = cats.map((cat,i) => imgSlotDef('catcover_'+cat, cat+' cover', C2.galeria.catCovers[cat] || ''));
+  const cats = C2.galeria.categoryOrder;
+  const catDefs = cats.map((cat,i) => imgSlotDef('catcover_'+cat, (C2.galeria.categories[cat]?.label || cat)+' — portada', C2.galeria.catCovers[cat] || ''));
   document.getElementById('admCatImgs').innerHTML = catDefs.map(buildSlotHTML).join('');
 
   buildGalleryImgSlots(C2);
@@ -1634,6 +1639,7 @@ function buildAdminPanel() {
   document.getElementById('tf_gal_titleEm').value = C2.galeria.titleEm;
   document.getElementById('tf_gal_desc').value    = C2.galeria.desc;
   buildGalMeta(C2);
+  buildGalCats(C2);
 
   // ── VIDEOS ──
   document.getElementById('tf_vid_label').value   = C2.videos.label;
@@ -1724,6 +1730,76 @@ function buildGalleryImgSlots(C2) {
   attachUploadListeners();
 }
 
+function buildGalCats(C2) {
+  const order = C2.galeria.categoryOrder;
+  document.getElementById('admGalCats').innerHTML = order.map((cat,i) => {
+    const meta = C2.galeria.categories[cat] || {label:cat, icon:'✨', desc:''};
+    const count = C2.galeria.images.filter(img=>img.cat===cat).length;
+    return `<div style="display:grid;grid-template-columns:60px 1fr 1fr 2fr auto auto auto;gap:0.5rem;margin-bottom:0.6rem;align-items:end;">
+      <div class="adm-field-row" style="margin:0;"><label>Icono</label><input id="tf_galcat_icon_${i}" type="text" value="${meta.icon}"></div>
+      <div class="adm-field-row" style="margin:0;"><label>Nombre</label><input id="tf_galcat_label_${i}" type="text" value="${meta.label}"></div>
+      <div class="adm-field-row" style="margin:0;"><label>Clave interna</label><input id="tf_galcat_key_${i}" type="text" value="${cat}" placeholder="ej: corporativos"></div>
+      <div class="adm-field-row" style="margin:0;"><label>Descripción</label><input id="tf_galcat_desc_${i}" type="text" value="${meta.desc}"></div>
+      <button class="adm-btn" title="Subir" onclick="moveGalCategory(${i},-1)" ${i===0?'disabled style="opacity:0.3"':''}>▲</button>
+      <button class="adm-btn" title="Bajar" onclick="moveGalCategory(${i},1)" ${i===order.length-1?'disabled style="opacity:0.3"':''}>▼</button>
+      <button class="adm-btn adm-btn-reset" title="Eliminar categoría" onclick="removeGalCategory(${i})">✕ ${count?`(${count} fotos)`:''}</button>
+    </div>`;
+  }).join('') + `<p style="font-family:'EB Garamond',serif;font-size:0.82rem;font-style:italic;color:rgba(245,238,216,0.3);margin-top:0.5rem;">La "Clave interna" identifica la categoría internamente (sin espacios ni acentos, ej: corporativos). Si la cambias, las fotos asignadas a la clave anterior deben reasignarse abajo. Eliminar una categoría no elimina sus fotos, pero quedarán sin categoría visible hasta que las reasignes.</p>`;
+}
+
+function addGalCategory() {
+  saveAdminSilent();
+  const C2 = loadContent();
+  let n = 1, key = 'nueva'+n;
+  while (C2.galeria.categoryOrder.includes(key)) { n++; key = 'nueva'+n; }
+  C2.galeria.categoryOrder.push(key);
+  C2.galeria.categories[key] = { label:'Nueva Categoría', icon:'✨', desc:'Descripción' };
+  C2.galeria.catCovers[key] = '';
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.galeria) saved.galeria={};
+  saved.galeria.categoryOrder = C2.galeria.categoryOrder;
+  saved.galeria.categories = C2.galeria.categories;
+  saved.galeria.catCovers = C2.galeria.catCovers;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-galeria');
+  renderAll();
+}
+
+function removeGalCategory(i) {
+  saveAdminSilent();
+  const C2 = loadContent();
+  if (C2.galeria.categoryOrder.length <= 1) { showToast('Debe quedar al menos una categoría'); return; }
+  const cat = C2.galeria.categoryOrder[i];
+  if (!confirm('¿Eliminar la categoría "'+(C2.galeria.categories[cat]?.label||cat)+'"? Las fotos que tenía quedarán visibles solo dentro de otra categoría que asignes manualmente.')) return;
+  C2.galeria.categoryOrder.splice(i,1);
+  delete C2.galeria.categories[cat];
+  delete C2.galeria.catCovers[cat];
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.galeria) saved.galeria={};
+  saved.galeria.categoryOrder = C2.galeria.categoryOrder;
+  saved.galeria.categories = C2.galeria.categories;
+  saved.galeria.catCovers = C2.galeria.catCovers;
+  saved.galeria.images = C2.galeria.images;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-galeria');
+  renderAll();
+}
+
+function moveGalCategory(i, dir) {
+  saveAdminSilent();
+  const C2 = loadContent();
+  const order = C2.galeria.categoryOrder;
+  const j = i + dir;
+  if (j < 0 || j >= order.length) return;
+  [order[i], order[j]] = [order[j], order[i]];
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.galeria) saved.galeria={};
+  saved.galeria.categoryOrder = order;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-galeria');
+  renderAll();
+}
+
 function buildGalMeta(C2) {
   const cats = C2.galeria.categoryOrder;
   document.getElementById('admGalMeta').innerHTML = C2.galeria.images.map((img,i) =>
@@ -1785,7 +1861,7 @@ function addHeroSlide() {
 function addGalleryImage() {
   saveAdminSilent();
   const C2 = loadContent();
-  C2.galeria.images.push({ src:'', cat:'otras', caption:'Nueva imagen' });
+  C2.galeria.images.push({ src:'', cat: C2.galeria.categoryOrder[0] || 'otras', caption:'Nueva imagen' });
   let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
   if(!saved.galeria) saved.galeria={};
   saved.galeria.images = C2.galeria.images;
@@ -1946,6 +2022,28 @@ function _doSave() {
   saved.galeria.title1  = v('tf_gal_title1');
   saved.galeria.titleEm = v('tf_gal_titleEm');
   saved.galeria.desc    = v('tf_gal_desc');
+  // category edits (label/icon/desc + key rename)
+  const order = [...C2.galeria.categoryOrder];
+  const categories = JSON.parse(JSON.stringify(C2.galeria.categories));
+  const catCovers = JSON.parse(JSON.stringify(C2.galeria.catCovers));
+  const keyMap = {}; // oldKey -> newKey
+  order.forEach((oldKey,i) => {
+    const iconEl = document.getElementById('tf_galcat_icon_'+i);
+    if(!iconEl) return;
+    const newKey = v('tf_galcat_key_'+i).trim() || oldKey;
+    const meta = { icon: iconEl.value, label: v('tf_galcat_label_'+i), desc: v('tf_galcat_desc_'+i) };
+    delete categories[oldKey];
+    categories[newKey] = meta;
+    if(newKey !== oldKey) {
+      catCovers[newKey] = catCovers[oldKey] || '';
+      delete catCovers[oldKey];
+    }
+    order[i] = newKey;
+    keyMap[oldKey] = newKey;
+  });
+  saved.galeria.categoryOrder = order;
+  saved.galeria.categories = categories;
+  saved.galeria.catCovers = catCovers;
   // gallery meta
   const galImgs = JSON.parse(JSON.stringify(C2.galeria.images));
   galImgs.forEach((_,i) => {
@@ -1953,7 +2051,8 @@ function _doSave() {
     const catEl = document.getElementById('tf_gal_cat_'+i);
     if(capEl && galImgs[i]) {
       galImgs[i].caption = capEl.value;
-      galImgs[i].cat = catEl.value;
+      const selectedCat = catEl.value;
+      galImgs[i].cat = keyMap[selectedCat] || selectedCat;
     }
   });
   saved.galeria.images = galImgs;
