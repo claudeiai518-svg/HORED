@@ -725,6 +725,34 @@ footer{position:relative;z-index:1;display:flex;align-items:center;justify-conte
     <!-- TAB: HERO -->
     <div id="tab-hero" class="adm-tab-content" style="display:none;">
       <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Espacio &amp; Velocidad del Hero</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="adm-field-row">
+            <label>Altura del Hero</label>
+            <select id="tf_hero_height" style="background:rgba(139,105,20,0.07);border:1px solid rgba(139,105,20,0.25);border-radius:2px;padding:0.6rem 0.9rem;color:var(--parch);font-family:'EB Garamond',serif;font-size:1rem;width:100%;outline:none;">
+              <option value="100vh">Pantalla completa (100vh)</option>
+              <option value="90vh">90% de pantalla</option>
+              <option value="80vh">80% de pantalla</option>
+              <option value="70vh">70% de pantalla</option>
+              <option value="60vh">60% de pantalla</option>
+              <option value="50vh">50% de pantalla (mediano)</option>
+              <option value="500px">500 px fijo</option>
+              <option value="400px">400 px fijo (compacto)</option>
+            </select>
+          </div>
+          <div class="adm-field-row">
+            <label>Velocidad de cambio de slide</label>
+            <select id="tf_hero_speed" style="background:rgba(139,105,20,0.07);border:1px solid rgba(139,105,20,0.25);border-radius:2px;padding:0.6rem 0.9rem;color:var(--parch);font-family:'EB Garamond',serif;font-size:1rem;width:100%;outline:none;">
+              <option value="3000">Rápido (3 seg)</option>
+              <option value="5000">Normal (5 seg)</option>
+              <option value="7000">Lento (7 seg)</option>
+              <option value="10000">Muy lento (10 seg)</option>
+            </select>
+          </div>
+        </div>
+        <p style="font-family:'EB Garamond',serif;font-size:0.82rem;font-style:italic;color:rgba(245,238,216,0.3);margin-top:-0.5rem;margin-bottom:1rem;">Los cambios se aplican al guardar.</p>
+      </div>
+      <div class="adm-section">
         <p class="adm-section-title">Textos del Hero</p>
         <div class="adm-field-row"><label>Eyebrow (texto pequeño encima)</label><input id="tf_hero_eyebrow" type="text"></div>
         <div class="adm-field-row"><label>Título línea 1</label><input id="tf_hero_titleLine1" type="text"></div>
@@ -901,6 +929,8 @@ footer{position:relative;z-index:1;display:flex;align-items:center;justify-conte
 const DEFAULT_CONTENT = {
   logo: "./images/img_00.jpg",
   hero: {
+    height: "100vh",
+    speed: 5000,
     eyebrow: "Decoraciones y Eventos",
     titleLine1: "Momentos que",
     titleEm: "Perduran",
@@ -1124,6 +1154,8 @@ function renderNav() {
 }
 
 function renderHero() {
+  // Aplica altura del hero como variable CSS
+  document.documentElement.style.setProperty('--hero-height', C.hero.height || '100vh');
   document.getElementById('heroEyebrow').textContent = C.hero.eyebrow;
   document.getElementById('heroTitle').innerHTML = C.hero.titleLine1 + '<br><em>' + C.hero.titleEm + '</em>';
   document.getElementById('heroSubtitle').textContent = C.hero.subtitle;
@@ -1179,6 +1211,18 @@ function renderGaleriaHeader() {
   document.getElementById('galeriaDesc').textContent = g.desc;
 }
 
+function getYtId(url) {
+  // Extrae el ID de YouTube de cualquier formato: embed, watch, youtu.be
+  const m = url.match(/(?:embed\/|v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function getThumb(it) {
+  if (it.thumb && it.thumb.trim()) return it.thumb.trim();
+  const id = getYtId(it.embedUrl);
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
+}
+
 function renderVideos() {
   const v = C.videos;
   document.getElementById('videosLabel').textContent = v.label;
@@ -1186,7 +1230,7 @@ function renderVideos() {
   document.getElementById('videosDesc').textContent = v.desc;
   document.getElementById('videosGrid').innerHTML = v.items.map(it =>
     `<div class="video-card reveal" onclick="openVideo('${it.embedUrl}')">
-      <img class="video-thumb" src="${it.thumb}" alt="${it.title}" loading="lazy">
+      <img class="video-thumb" src="${getThumb(it)}" alt="${it.title}" loading="lazy">
       <div class="video-overlay"></div>
       <div class="video-play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
       <div class="video-info">
@@ -1398,7 +1442,9 @@ function galleryNav(d) {
 // VIDEO LIGHTBOX
 // ════════════════════════════════════════════════════════
 function openVideo(url) {
-  document.getElementById('lightbox-iframe').src = url;
+  // Añade autoplay + parámetros de calidad a la URL de embed
+  const sep = url.includes('?') ? '&' : '?';
+  document.getElementById('lightbox-iframe').src = url + sep + 'autoplay=1&rel=0&modestbranding=1';
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1451,13 +1497,14 @@ let curSlide = 0;
 let heroTimer = null;
 function startHeroSlider() {
   if(heroTimer) clearInterval(heroTimer);
+  const speed = C && C.hero && C.hero.speed ? parseInt(C.hero.speed) : 5000;
   heroTimer = setInterval(()=>{
     const slides = document.querySelectorAll('.hero-slide');
     if(slides.length < 2) return;
     slides[curSlide].classList.remove('active');
     curSlide = (curSlide+1) % slides.length;
     slides[curSlide].classList.add('active');
-  }, 5000);
+  }, speed);
 }
 startHeroSlider();
 
@@ -1543,6 +1590,8 @@ function buildAdminPanel() {
   buildGalleryImgSlots(C2);
 
   // ── HERO ──
+  document.getElementById('tf_hero_height').value = C2.hero.height || '100vh';
+  document.getElementById('tf_hero_speed').value  = String(C2.hero.speed || 5000);
   document.getElementById('tf_hero_eyebrow').value    = C2.hero.eyebrow;
   document.getElementById('tf_hero_titleLine1').value = C2.hero.titleLine1;
   document.getElementById('tf_hero_titleEm').value    = C2.hero.titleEm;
