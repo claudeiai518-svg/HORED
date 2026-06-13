@@ -1272,7 +1272,7 @@ function renderGaleriaHeader() {
 
 function getYtId(url) {
   // Extrae el ID de YouTube de cualquier formato: embed, watch, youtu.be
-  const m = url.match(/(?:embed\/|v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  const m = url.match(/(?:embed\/|v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : null;
 }
 
@@ -1503,9 +1503,12 @@ function galleryNav(d) {
 // VIDEO LIGHTBOX
 // ════════════════════════════════════════════════════════
 function openVideo(url) {
+  // Normaliza cualquier URL de YouTube (watch, youtu.be, embed, shorts) a formato embed
+  const id = getYtId(url);
+  const embedUrl = id ? `https://www.youtube.com/embed/${id}` : url;
   // Añade autoplay + parámetros de calidad a la URL de embed
-  const sep = url.includes('?') ? '&' : '?';
-  document.getElementById('lightbox-iframe').src = url + sep + 'autoplay=1&rel=0&modestbranding=1';
+  const sep = embedUrl.includes('?') ? '&' : '?';
+  document.getElementById('lightbox-iframe').src = embedUrl + sep + 'autoplay=1&rel=0&modestbranding=1';
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1878,7 +1881,7 @@ function buildVideoFields(C2) {
       <p class="adm-section-title" style="font-size:0.6rem;">Video ${i+1}</p>
       <div class="adm-field-row"><label>Título</label><input id="tf_vid_title_${i}" type="text" value="${v.title}"></div>
       <div class="adm-field-row"><label>Categoría</label><input id="tf_vid_cat_${i}" type="text" value="${v.category}"></div>
-      <div class="adm-field-row"><label>Embed URL (YouTube)</label><input id="tf_vid_url_${i}" type="text" value="${v.embedUrl}"></div>
+      <div class="adm-field-row"><label>Enlace de YouTube (cualquier formato: normal, youtu.be, shorts o embed)</label><input id="tf_vid_url_${i}" type="text" value="${v.embedUrl}" placeholder="https://www.youtube.com/watch?v=..."></div>
       <div class="adm-field-row"><label>Thumb URL (dejar vacío para auto)</label><input id="tf_vid_thumb_${i}" type="text" value="${v.thumb}"></div>
       <button class="adm-btn adm-btn-reset" style="font-size:0.5rem;padding:0.3rem 0.8rem;" onclick="removeVideo(${i})">✕ Eliminar video ${i+1}</button>
     </div>`
