@@ -2458,14 +2458,48 @@ function _doSave() {
   if(!saved.footer) saved.footer={};
   saved.footer.copy = v('tf_footer_copy');
 
-  // Actualizar cache local y guardar en Apps Script
+  // Actualizar cache local y guardar en Apps Script sección por sección
   deepMerge(_contentCache, saved);
-  gasPost({ action: 'saveAll', data: saved })
-    .then(r => {
-      if (r.ok) showToast('✦ Guardado en la nube');
-      else showToast('⚠️ Error al guardar: ' + (r.error || ''));
-    })
-    .catch(() => showToast('⚠️ Sin conexión al servidor'));
+  (async () => {
+    const secciones = [
+      { section: 'hero',        data: saved.hero },
+      { section: 'stats',       data: saved.stats },
+      { section: 'servicios',   data: saved.servicios },
+      { section: 'videos',      data: saved.videos },
+      { section: 'paquetes',    data: saved.paquetes },
+      { section: 'proceso',     data: saved.proceso },
+      { section: 'testimonios', data: saved.testimonios },
+      { section: 'contratos',   data: saved.contratos },
+      { section: 'contacto',    data: saved.contacto },
+      { section: 'footer',      data: saved.footer },
+    ];
+    // Galería se divide: primero cabecera+categorías, luego imágenes en lotes
+    const galeriaBase = {
+      label: saved.galeria.label, title1: saved.galeria.title1,
+      titleEm: saved.galeria.titleEm, desc: saved.galeria.desc,
+      categories: saved.galeria.categories,
+      categoryOrder: saved.galeria.categoryOrder,
+      catCovers: saved.galeria.catCovers,
+      images: []
+    };
+    secciones.push({ section: 'galeria', data: galeriaBase });
+    // Imágenes en lotes de 20
+    const imgs = saved.galeria.images || [];
+    for (let i = 0; i < imgs.length; i += 20) {
+      const lote = imgs.slice(i, i + 20);
+      secciones.push({ section: 'galeria', data: { images: lote, _append: i > 0 } });
+    }
+    let errores = 0;
+    for (const sec of secciones) {
+      if (!sec.data) continue;
+      try {
+        const r = await gasPost({ action: 'saveSection', section: sec.section, data: sec.data });
+        if (!r.ok) errores++;
+      } catch(e) { errores++; }
+    }
+    if (errores === 0) showToast('✦ Guardado en la nube');
+    else showToast('⚠️ Error al guardar ' + errores + ' sección(es)');
+  })();
 }
 
 function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
