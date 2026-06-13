@@ -1617,6 +1617,7 @@ function startHeroSlider() {
 
 // Testimonials auto-rotate
 setInterval(()=>{
+  if(!C || !C.testimonios || !C.testimonios.quotes) return;
   testiIdx = (testiIdx+1) % C.testimonios.quotes.length;
   changeQuote(testiIdx);
 }, 5000);
