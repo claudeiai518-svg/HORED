@@ -2026,8 +2026,9 @@ function setImgPos(key, pos) {
   if (!_contentCache) _contentCache = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
   if (!_contentCache.imgPos) _contentCache.imgPos = {};
   _contentCache.imgPos[key] = pos;
-  // Guardar imgPos como sección especial en Apps Script
-  gasPost({ action: 'saveSection', section: 'config', data: { imgPos: JSON.stringify(_contentCache.imgPos) } });
+  // Guardar todo el mapa imgPos en su propia hoja en Apps Script
+  gasPost({ action: 'saveSection', section: 'imgPos', data: _contentCache.imgPos })
+    .then(r => { if (!r.ok) console.warn('Error guardando imgPos:', r.error); });
 }
 
 // Apply stored fit/zoom/position to a background-image element (hero slide, cat card cover)
