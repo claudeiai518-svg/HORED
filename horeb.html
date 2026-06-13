@@ -1612,7 +1612,10 @@ function startHeroSlider() {
     curSlide = (curSlide+1) % slides.length;
     slides[curSlide].classList.add('active');
   }, speed);
+}
 // (startHeroSlider se invoca desde renderAll() una vez que C está definido)
+
+// Testimonials auto-rotate
 setInterval(()=>{
   testiIdx = (testiIdx+1) % C.testimonios.quotes.length;
   changeQuote(testiIdx);
