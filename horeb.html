@@ -129,7 +129,7 @@ nav a:hover{color:var(--gold);}
 /* ══════════════ HERO ══════════════ */
 #hero{position:relative;min-height:var(--hero-height);display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center;background:var(--dark);}
 .hero-bg{position:absolute;inset:0;overflow:hidden;}
-.hero-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 2s ease;}
+.hero-slide{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;background-color:var(--dark);opacity:0;transition:opacity 2s ease;}
 .hero-slide.active{opacity:1;}
 .hero-slide::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(26,15,2,0.5) 0%,rgba(26,15,2,0.2) 40%,rgba(26,15,2,0.75) 100%);}
 .hero-texture{position:absolute;inset:0;z-index:1;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(139,105,20,0.025) 2px,rgba(139,105,20,0.025) 3px),repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(139,105,20,0.03) 60px,rgba(139,105,20,0.03) 61px);}
@@ -189,7 +189,7 @@ h3{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:500;letter-spacing:0.
 .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
 .cat-card{position:relative;height:380px;overflow:hidden;cursor:pointer;border-radius:2px;border:1px solid rgba(139,105,20,0.2);transition:transform 0.35s,box-shadow 0.35s;}
 .cat-card:hover{transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,0.5);}
-.cat-card-img{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 0.6s ease;}
+.cat-card-img{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;background-color:var(--dark);transition:transform 0.6s ease;}
 .cat-card:hover .cat-card-img{transform:scale(1.08);}
 .cat-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,5,0,0.88) 0%,rgba(10,5,0,0.3) 50%,rgba(10,5,0,0.1) 100%);transition:background 0.4s;}
 .cat-card:hover .cat-card-overlay{background:linear-gradient(to top,rgba(10,5,0,0.92) 0%,rgba(10,5,0,0.45) 55%,rgba(139,105,20,0.08) 100%);}
