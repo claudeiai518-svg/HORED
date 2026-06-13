@@ -927,6 +927,31 @@ footer{position:relative;z-index:1;display:flex;align-items:center;justify-conte
 
 <div class="adm-toast" id="admToast">✦ Guardado correctamente</div>
 
+<!-- ══ IMAGE POSITION EDITOR ══ -->
+<div class="img-pos-editor" id="imgPosEditor">
+  <p class="ipe-title">Ajustar imagen</p>
+  <p class="ipe-hint">Arrastra para mover. Usa el zoom para acercar o alejar. "Llenar" recorta para cubrir el espacio; "Ajustar" muestra la foto completa.</p>
+  <div class="ipe-canvas" id="ipeCanvas">
+    <img class="ipe-img" id="ipeImg">
+    <div class="ipe-crosshair"></div>
+  </div>
+  <div class="ipe-controls">
+    <div class="ipe-fit-btns">
+      <button class="ipe-fit-btn" id="ipeFitContain" onclick="ipeSetFit('contain')">Ajustar (completa)</button>
+      <button class="ipe-fit-btn" id="ipeFitCover" onclick="ipeSetFit('cover')">Llenar (recortar)</button>
+    </div>
+    <div class="ipe-ctrl-group">
+      <span class="ipe-ctrl-label">Zoom</span>
+      <input type="range" class="ipe-slider" id="ipeZoom" min="100" max="300" value="100" oninput="ipeUpdate()">
+      <span class="ipe-val" id="ipeZoomVal">100%</span>
+    </div>
+  </div>
+  <div class="ipe-actions">
+    <button class="ipe-save" onclick="ipeSave()">✦ Guardar</button>
+    <button class="ipe-cancel" onclick="ipeCancel()">Cancelar</button>
+  </div>
+</div>
+
 <script>
 // ════════════════════════════════════════════════════════
 // HOREB — CONTENIDO POR DEFECTO
@@ -1177,7 +1202,7 @@ function renderHero() {
     const div = document.createElement('div');
     div.className = 'hero-slide' + (i===0?' active':'');
     div.id = 'slide'+i;
-    if(s) div.style.backgroundImage = 'url('+s+')';
+    if(s) { div.style.backgroundImage = 'url('+s+')'; applyImgPosBg(div, 'hero_slide_'+i); }
     heroBg.appendChild(div);
   });
   curSlide = 0;
@@ -1396,6 +1421,7 @@ function renderCategories() {
         <span class="cat-count">${count} fotos</span>
       </div>`;
     grid.appendChild(card);
+    if(cover) applyImgPosBg(card.querySelector('.cat-card-img'), 'catcover_'+cat);
   });
   document.getElementById('galleryBack').style.display = 'none';
   document.getElementById('galleryCatTitle').textContent = '';
@@ -1415,10 +1441,11 @@ function openCategory(cat) {
   grid.innerHTML = filtered.map((img, fi) => {
     const wide = (fi===0||fi===4||fi===8) ? ' gi-wide' : '';
     return `<div class="gallery-item${wide}" onclick="openGalleryLb(${img.origIdx})">
-      <img class="gallery-img" src="${img.src}" alt="${img.caption}" loading="lazy">
+      <img class="gallery-img" src="${img.src}" alt="${img.caption}" loading="lazy" data-poskey="gallery_img_${img.origIdx}">
       <div class="gallery-overlay"><p class="gallery-caption">${img.caption}</p></div>
     </div>`;
   }).join('');
+  grid.querySelectorAll('.gallery-img').forEach(im => applyImgPosImg(im, im.dataset.poskey));
 }
 
 let curG = 0;
@@ -1937,7 +1964,7 @@ function removeWaNumber(idx) {
 }
 
 function buildSlotHTML(d) {
-  const preview = d.src && !d.src.startsWith('./') ? d.src : '';
+  const preview = d.src && !d.src.startsWith('./') ? d.src : (d.src || '');
   return `<div class="adm-img-slot" data-key="${d.lsKey}">
     <label>${d.label}</label>
     <img src="${preview || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" onerror="this.style.opacity=0.1" style="${preview?'':'opacity:0.1'}">
@@ -1945,7 +1972,156 @@ function buildSlotHTML(d) {
     <button class="adm-upload-btn">📤 Subir imagen</button>
     <span class="adm-uploading" style="display:none;">Subiendo…</span>
     ${preview?`<span style="font-size:0.6rem;color:rgba(245,238,216,0.3);word-break:break-all;text-align:center;">✓ Guardada</span>`:''}
+    ${preview?`<button class="adm-upload-btn" style="margin-top:0.2rem;" onclick="ipeOpen('${d.lsKey}')">🔧 Ajustar encuadre</button>`:''}
   </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// IMAGE POSITION / ZOOM EDITOR (per image, by lsKey)
+// ════════════════════════════════════════════════════════
+function getImgPos(key) {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
+  return (saved.imgPos && saved.imgPos[key]) || { fit:'contain', zoom:100, posX:50, posY:50 };
+}
+
+function setImgPos(key, pos) {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
+  if(!saved.imgPos) saved.imgPos = {};
+  saved.imgPos[key] = pos;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+}
+
+// Apply stored fit/zoom/position to a background-image element (hero slide, cat card cover)
+function applyImgPosBg(el, key) {
+  const p = getImgPos(key);
+  if (p.fit === 'cover' && p.zoom === 100) {
+    el.style.backgroundSize = 'cover';
+  } else if (p.fit === 'contain' && p.zoom === 100) {
+    el.style.backgroundSize = 'contain';
+  } else {
+    el.style.backgroundSize = `${p.zoom}%`;
+  }
+  el.style.backgroundPosition = `${p.posX}% ${p.posY}%`;
+  el.style.backgroundRepeat = 'no-repeat';
+}
+
+// Apply stored fit/zoom/position to an <img> element (gallery photos)
+function applyImgPosImg(imgEl, key) {
+  const p = getImgPos(key);
+  imgEl.style.objectFit = p.fit;
+  imgEl.style.objectPosition = `${p.posX}% ${p.posY}%`;
+  imgEl.style.transform = p.zoom !== 100 ? `scale(${p.zoom/100})` : '';
+}
+
+let ipeState = null;
+function ipeOpen(key) {
+  const C2 = loadContent();
+  let src = '';
+  if (key === 'img_00') src = C2.logo;
+  else if (key === 'img_01') src = C2.contratos.items[0]?.img || '';
+  else if (key === 'img_02') src = C2.contratos.items[1]?.img || '';
+  else if (key.startsWith('hero_slide_')) src = C2.hero.slides[+key.replace('hero_slide_','')] || '';
+  else if (key.startsWith('catcover_')) src = C2.galeria.catCovers[key.replace('catcover_','')] || '';
+  else if (key.startsWith('gallery_img_')) src = C2.galeria.images[+key.replace('gallery_img_','')]?.src || '';
+  if (!src) { showToast('Sube primero una imagen'); return; }
+
+  const pos = getImgPos(key);
+  ipeState = { key, ...pos };
+
+  const canvas = document.getElementById('ipeCanvas');
+  const isWide = key.startsWith('hero_slide_') || key.startsWith('catcover_');
+  canvas.style.width = isWide ? 'min(90vw, 700px)' : 'min(90vw, 420px)';
+  canvas.style.height = isWide ? 'min(50vh, 380px)' : 'min(50vh, 420px)';
+
+  const img = document.getElementById('ipeImg');
+  img.src = src;
+  img.onload = () => ipeRender();
+
+  document.getElementById('ipeZoom').value = pos.zoom;
+  document.getElementById('ipeZoomVal').textContent = pos.zoom + '%';
+  ipeHighlightFit();
+
+  document.getElementById('imgPosEditor').classList.add('open');
+
+  // drag handling
+  let dragging = false, startX=0, startY=0, startPosX=0, startPosY=0;
+  canvas.onmousedown = canvas.ontouchstart = (e) => {
+    dragging = true;
+    const pt = e.touches ? e.touches[0] : e;
+    startX = pt.clientX; startY = pt.clientY;
+    startPosX = ipeState.posX; startPosY = ipeState.posY;
+  };
+  window.onmousemove = window.ontouchmove = (e) => {
+    if(!dragging) return;
+    const pt = e.touches ? e.touches[0] : e;
+    const rect = canvas.getBoundingClientRect();
+    const dx = (pt.clientX - startX) / rect.width * 100;
+    const dy = (pt.clientY - startY) / rect.height * 100;
+    ipeState.posX = Math.min(100, Math.max(0, startPosX - dx));
+    ipeState.posY = Math.min(100, Math.max(0, startPosY - dy));
+    ipeRender();
+  };
+  window.onmouseup = window.ontouchend = () => { dragging = false; };
+}
+
+function ipeHighlightFit() {
+  document.getElementById('ipeFitContain').style.background = ipeState.fit==='contain' ? 'var(--gold)' : 'rgba(139,105,20,0.1)';
+  document.getElementById('ipeFitContain').style.color = ipeState.fit==='contain' ? '#fff' : 'var(--gold3)';
+  document.getElementById('ipeFitCover').style.background = ipeState.fit==='cover' ? 'var(--gold)' : 'rgba(139,105,20,0.1)';
+  document.getElementById('ipeFitCover').style.color = ipeState.fit==='cover' ? '#fff' : 'var(--gold3)';
+}
+
+function ipeSetFit(fit) {
+  ipeState.fit = fit;
+  ipeHighlightFit();
+  ipeRender();
+}
+
+function ipeUpdate() {
+  ipeState.zoom = +document.getElementById('ipeZoom').value;
+  document.getElementById('ipeZoomVal').textContent = ipeState.zoom + '%';
+  ipeRender();
+}
+
+function ipeRender() {
+  const canvas = document.getElementById('ipeCanvas');
+  const img = document.getElementById('ipeImg');
+  const cw = canvas.clientWidth, ch = canvas.clientHeight;
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  if(!iw || !ih) return;
+
+  let baseW, baseH;
+  if (ipeState.fit === 'cover') {
+    const scale = Math.max(cw/iw, ch/ih);
+    baseW = iw*scale; baseH = ih*scale;
+  } else {
+    const scale = Math.min(cw/iw, ch/ih);
+    baseW = iw*scale; baseH = ih*scale;
+  }
+  const z = ipeState.zoom/100;
+  const w = baseW*z, h = baseH*z;
+  img.style.width = w+'px';
+  img.style.height = h+'px';
+
+  const maxOffX = Math.max(0,(w-cw)/2);
+  const maxOffY = Math.max(0,(h-ch)/2);
+  const offX = (ipeState.posX-50)/50 * maxOffX;
+  const offY = (ipeState.posY-50)/50 * maxOffY;
+  img.style.left = (cw/2 - w/2 - offX)+'px';
+  img.style.top  = (ch/2 - h/2 - offY)+'px';
+}
+
+function ipeSave() {
+  setImgPos(ipeState.key, { fit:ipeState.fit, zoom:ipeState.zoom, posX:ipeState.posX, posY:ipeState.posY });
+  document.getElementById('imgPosEditor').classList.remove('open');
+  showToast('✦ Encuadre guardado');
+  renderAll();
+}
+
+function ipeCancel() {
+  document.getElementById('imgPosEditor').classList.remove('open');
 }
 
 function attachUploadListeners() {
