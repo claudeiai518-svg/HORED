@@ -937,6 +937,12 @@ footer{position:relative;z-index:1;display:flex;align-items:center;justify-conte
       <button class="adm-btn adm-btn-save" onclick="saveAdmin()">✦ Guardar Todos los Cambios</button>
       <button class="adm-btn adm-btn-reset" onclick="resetAdmin()">↺ Restaurar Valores por Defecto</button>
     </div>
+    <div class="adm-actions" style="margin-top:1rem;">
+      <button class="adm-btn" onclick="exportConfig()">⬇ Exportar configuración (.json)</button>
+      <button class="adm-btn" onclick="document.getElementById('importConfigFile').click()">⬆ Importar configuración (.json)</button>
+      <input type="file" id="importConfigFile" accept="application/json" style="display:none" onchange="importConfig(this)">
+    </div>
+    <p class="adm-key-hint" style="margin-top:0.8rem;">⚠️ Importante: tus cambios se guardan solo en <strong>este navegador/dispositivo</strong> (localStorage). Para que se vean igual en celular u otra computadora, exporta el JSON aquí y pégalo dentro del código como nuevo contenido por defecto antes de subirlo a GitHub, o impórtalo en el otro dispositivo.</p>
     <p class="adm-key-hint" style="margin-top:1rem;">Para subir imágenes a producción configura tu API Key de <a href="https://imgbb.com" target="_blank" style="color:var(--gold3);">imgbb.com</a> — edita la variable IMGBB_KEY en el código.</p>
   </div>
 </div>
@@ -2186,6 +2192,40 @@ function attachUploadListeners() {
     newBtn.addEventListener('click', () => newInp.click());
     newInp.addEventListener('change', () => handleUpload(newInp, key, slot));
   });
+}
+
+function exportConfig() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
+  const blob = new Blob([JSON.stringify(saved, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'horeb_content.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✦ Configuración exportada');
+}
+
+function importConfig(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      localStorage.setItem('horeb_content', JSON.stringify(data));
+      showToast('✦ Configuración importada');
+      buildAdminPanel();
+      renderAll();
+    } catch(err) {
+      showToast('Error: archivo JSON inválido');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
 }
 
 function saveAdminSilent() {
