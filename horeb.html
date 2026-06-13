@@ -956,6 +956,10 @@ footer{position:relative;z-index:1;display:flex;align-items:center;justify-conte
     <img class="ipe-img" id="ipeImg">
     <div class="ipe-crosshair"></div>
   </div>
+  <div class="ipe-ctrl-group" id="ipeCaptionGroup" style="display:none;width:100%;max-width:500px;">
+    <span class="ipe-ctrl-label">Texto / Letrero (caption)</span>
+    <input type="text" id="ipeCaption" style="width:100%;background:rgba(139,105,20,0.07);border:1px solid rgba(139,105,20,0.25);border-radius:2px;padding:0.6rem 0.9rem;color:var(--parch);font-family:'EB Garamond',serif;font-size:0.95rem;outline:none;">
+  </div>
   <div class="ipe-controls">
     <div class="ipe-fit-btns">
       <button class="ipe-fit-btn" id="ipeFitContain" onclick="ipeSetFit('contain')">Ajustar (completa)</button>
@@ -2054,6 +2058,14 @@ function ipeOpen(key) {
   else if (key.startsWith('gallery_img_')) src = C2.galeria.images[+key.replace('gallery_img_','')]?.src || '';
   if (!src) { showToast('Sube primero una imagen'); return; }
 
+  const capGroup = document.getElementById('ipeCaptionGroup');
+  if (key.startsWith('gallery_img_')) {
+    capGroup.style.display = 'flex';
+    document.getElementById('ipeCaption').value = C2.galeria.images[+key.replace('gallery_img_','')]?.caption || '';
+  } else {
+    capGroup.style.display = 'none';
+  }
+
   const pos = getImgPos(key);
   ipeState = { key, ...pos };
 
@@ -2142,9 +2154,21 @@ function ipeRender() {
 
 function ipeSave() {
   setImgPos(ipeState.key, { fit:ipeState.fit, zoom:ipeState.zoom, posX:ipeState.posX, posY:ipeState.posY });
+  if (ipeState.key.startsWith('gallery_img_')) {
+    const idx = +ipeState.key.replace('gallery_img_','');
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
+    const C2 = loadContent();
+    if(!saved.galeria) saved.galeria = {};
+    if(!saved.galeria.images) saved.galeria.images = JSON.parse(JSON.stringify(C2.galeria.images));
+    while(saved.galeria.images.length <= idx) saved.galeria.images.push({...C2.galeria.images[saved.galeria.images.length]});
+    saved.galeria.images[idx].caption = document.getElementById('ipeCaption').value;
+    localStorage.setItem('horeb_content', JSON.stringify(saved));
+  }
   document.getElementById('imgPosEditor').classList.remove('open');
   showToast('✦ Encuadre guardado');
   renderAll();
+  if (document.getElementById('adminPanel').classList.contains('open')) buildAdminPanel();
 }
 
 function ipeCancel() {
