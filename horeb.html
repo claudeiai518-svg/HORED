@@ -1640,12 +1640,14 @@ document.addEventListener('keydown', e => {
 // Open admin via URL hash #admin
 function checkHashAdmin() {
   if (window.location.hash === '#admin') {
+    if (!_contentCache) { setTimeout(checkHashAdmin, 100); return; }
     buildAdminPanel();
     document.getElementById('adminPanel').classList.add('open');
   }
 }
 window.addEventListener('hashchange', () => {
   if (window.location.hash === '#admin') {
+    if (!_contentCache) { setTimeout(checkHashAdmin, 100); return; }
     buildAdminPanel();
     document.getElementById('adminPanel').classList.add('open');
   } else {
