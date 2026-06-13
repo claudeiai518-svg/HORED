@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horeb — Decoraciones y Eventos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   CONTRACT-INSPIRED THEME
+   Cream parchment · Antique gold · Elegant serif
+═══════════════════════════════════════════════════ */
+:root{
+  --parch: #F5EED8;
+  --parch2: #EDE3C4;
+  --parch3: #E5D8AF;
+  --gold: #8B6914;
+  --gold2: #C4942A;
+  --gold3: #D4AA55;
+  --dark: #1A0F02;
+  --ink: #2C1A06;
+  --ink2: #5C3D10;
+  --white: #FDFAF2;
+  --border: rgba(139,105,20,0.25);
+  --border2: rgba(139,105,20,0.12);
+  --shadow: rgba(42,20,0,0.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Lato',sans-serif;background:var(--parch);color:var(--ink);overflow-x:hidden;}
+
+/* ── ORNAMENTAL DIVIDER ── */
+.orn{display:flex;align-items:center;justify-content:center;gap:0.8rem;margin:0.5rem auto;color:var(--gold2);font-size:0.75rem;letter-spacing:0.15em;}
+.orn::before,.orn::after{content:'';flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold2));}
+.orn::after{background:linear-gradient(90deg,var(--gold2),transparent);}
+
+/* corner ornaments */
+.corner-frame{position:relative;border:1.5px solid rgba(139,105,20,0.3);padding:3rem 2.5rem;}
+.corner-frame::before,.corner-frame::after,.corner-frame .cf-bl,.corner-frame .cf-br{content:'';position:absolute;width:20px;height:20px;border-color:var(--gold2);border-style:solid;}
+.corner-frame::before{top:-2px;left:-2px;border-width:2px 0 0 2px;}
+.corner-frame::after{top:-2px;right:-2px;border-width:2px 2px 0 0;}
+.corner-frame .cf-bl{bottom:-2px;left:-2px;border-width:0 0 2px 2px;}
+.corner-frame .cf-br{bottom:-2px;right:-2px;border-width:0 2px 2px 0;}
+
+/* ── SCROLLREVEAL ── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.reveal.visible{opacity:1;transform:none;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:none;}}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(8px);}}
+
+/* ══════════════ NAV ══════════════ */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0.9rem 3rem;background:rgba(245,238,216,0.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);}
+.nav-logo{display:flex;align-items:center;gap:0.7rem;text-decoration:none;}
+.nav-logo-circle{width:46px;height:46px;border-radius:50%;overflow:hidden;border:1.5px solid var(--gold2);flex-shrink:0;}
+.nav-logo-circle img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
+.nav-logo-text{font-family:'Cinzel',serif;font-size:1.15rem;letter-spacing:0.25em;color:var(--gold);font-weight:600;}
+.nav-logo-sub{font-family:'EB Garamond',serif;font-size:0.68rem;letter-spacing:0.1em;color:var(--ink2);display:block;margin-top:-2px;font-style:italic;}
+nav ul{display:flex;gap:2rem;list-style:none;align-items:center;}
+nav a{font-family:'Cinzel',serif;font-size:0.6rem;font-weight:500;letter-spacing:0.22em;text-transform:uppercase;color:var(--ink2);text-decoration:none;transition:color 0.2s;}
+nav a:hover{color:var(--gold);}
+.nav-cta{background:var(--gold) !important;color:var(--white) !important;padding:0.5rem 1.4rem;border-radius:1px;}
+.nav-cta:hover{background:var(--gold2) !important;color:var(--white) !important;}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;padding:4px;}
+.nav-toggle span{display:block;width:22px;height:1.5px;background:var(--gold);transition:transform 0.3s;}
+.nav-mobile-open ul{display:flex !important;flex-direction:column;position:fixed;inset:0;background:rgba(26,15,2,0.97);justify-content:center;align-items:center;gap:3rem;z-index:199;}
+.nav-mobile-open ul a{font-size:1.2rem !important;color:var(--parch) !important;letter-spacing:0.25em;}
+.nav-mobile-open .nav-toggle{position:fixed;top:1rem;right:1.5rem;z-index:201;}
+.nav-mobile-open .nav-toggle span{background:var(--parch);}
+.nav-mobile-open .nav-cta{background:var(--gold) !important;color:var(--white) !important;padding:0.7rem 2rem;}
+
+/* ══════════════ HERO ══════════════ */
+#hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center;background:var(--dark);}
+.hero-bg{position:absolute;inset:0;overflow:hidden;}
+.hero-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 2s ease;}
+.hero-slide.active{opacity:1;}
+.hero-slide::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(26,15,2,0.5) 0%,rgba(26,15,2,0.2) 40%,rgba(26,15,2,0.75) 100%);}
+.hero-texture{position:absolute;inset:0;z-index:1;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(139,105,20,0.025) 2px,rgba(139,105,20,0.025) 3px),repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(139,105,20,0.03) 60px,rgba(139,105,20,0.03) 61px);}
+.hero-content{position:relative;z-index:2;max-width:860px;padding:2rem;animation:fadeUp 1.4s ease both;}
+.hero-eyebrow{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.45em;text-transform:uppercase;color:var(--gold3);margin-bottom:1.5rem;display:flex;align-items:center;justify-content:center;gap:1.2rem;}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'✦';font-size:0.5rem;opacity:0.7;}
+h1{font-family:'Cinzel Decorative',serif;font-size:clamp(3rem,8vw,6.5rem);font-weight:400;line-height:1;color:var(--parch);margin-bottom:0.15em;text-shadow:0 4px 30px rgba(0,0,0,0.5);}
+h1 em{font-style:normal;color:var(--gold3);}
+.hero-rule{display:flex;align-items:center;justify-content:center;gap:1rem;margin:1.5rem auto;}
+.hero-rule::before,.hero-rule::after{content:'';width:60px;height:1px;background:rgba(212,170,85,0.5);}
+.hero-rule span{font-size:1rem;color:var(--gold3);}
+.hero-sub{font-family:'EB Garamond',serif;font-size:clamp(1rem,2vw,1.2rem);font-weight:400;font-style:italic;color:rgba(245,238,216,0.75);max-width:520px;margin:0 auto 3rem;line-height:1.9;}
+.hero-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+.btn-primary{font-family:'Cinzel',serif;font-size:0.65rem;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;text-decoration:none;background:var(--gold);color:var(--white);padding:0.95rem 2.5rem;cursor:pointer;transition:background 0.25s,transform 0.25s;display:inline-block;border-radius:1px;border:none;}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-2px);}
+.btn-outline{font-family:'Cinzel',serif;font-size:0.65rem;font-weight:500;letter-spacing:0.22em;text-transform:uppercase;text-decoration:none;background:transparent;color:var(--parch);padding:0.95rem 2.5rem;border:1px solid rgba(245,238,216,0.35);cursor:pointer;transition:border-color 0.25s,transform 0.25s,color 0.25s;display:inline-block;border-radius:1px;}
+.btn-outline:hover{border-color:var(--gold3);color:var(--gold3);transform:translateY(-2px);}
+.scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:0.5rem;opacity:0.4;font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--parch);animation:bounce 2s ease-in-out infinite;}
+.scroll-hint::after{content:'';width:1px;height:40px;background:var(--gold2);}
+
+/* ══════════════ STATS ══════════════ */
+#numbers{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);position:relative;z-index:1;}
+.stat-box{background:var(--white);padding:3.5rem 2rem;text-align:center;transition:background 0.3s;}
+.stat-box:hover{background:var(--parch2);}
+.stat-num{font-family:'Cinzel Decorative',serif;font-size:3rem;color:var(--gold);line-height:1;display:block;}
+.stat-label{font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink2);margin-top:0.6rem;display:block;}
+
+/* ══════════════ SECTION COMMONS ══════════════ */
+.section-label{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.38em;text-transform:uppercase;color:var(--gold);margin-bottom:0.7rem;font-weight:600;}
+h2{font-family:'Cinzel',serif;font-size:clamp(2rem,4.5vw,3.2rem);font-weight:500;line-height:1.15;color:var(--ink);}
+h2 em{font-style:italic;color:var(--gold);font-family:'Cinzel Decorative',serif;font-weight:400;}
+.section-desc{max-width:380px;font-family:'EB Garamond',serif;font-size:1.05rem;line-height:1.9;color:var(--ink2);font-style:italic;}
+.section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:4rem;gap:2rem;}
+
+/* ══════════════ SERVICIOS ══════════════ */
+#servicios{position:relative;z-index:1;padding:8rem 4rem;max-width:1400px;margin:0 auto;}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);}
+.service-card{background:var(--white);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:background 0.3s;}
+.service-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),transparent);transform:scaleX(0);transform-origin:left;transition:transform 0.4s;}
+.service-card:hover::before{transform:scaleX(1);}
+.service-card:hover{background:var(--parch);}
+.service-icon{font-size:2rem;margin-bottom:1.5rem;display:block;}
+.service-num{font-family:'Cinzel Decorative',serif;font-size:4.5rem;color:rgba(139,105,20,0.06);position:absolute;top:0.5rem;right:1rem;line-height:1;pointer-events:none;}
+h3{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:500;letter-spacing:0.08em;color:var(--ink);margin-bottom:0.9rem;}
+.service-card p{font-family:'EB Garamond',serif;font-size:1rem;line-height:1.85;color:var(--ink2);}
+.service-tags{display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:1.5rem;}
+.tag{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;padding:0.3rem 0.8rem;border:1px solid rgba(139,105,20,0.3);color:var(--gold);border-radius:1px;background:rgba(139,105,20,0.05);}
+
+/* ══════════════ GALERÍA ══════════════ */
+#galeria{position:relative;z-index:1;padding:8rem 4rem;background:var(--dark);overflow:hidden;}
+#galeria .section-label{color:var(--gold3);}
+#galeria h2{color:var(--parch);}
+#galeria h2 em{color:var(--gold3);}
+#galeria .section-desc{color:rgba(245,238,216,0.6);}
+.galeria-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;}
+.galeria-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:3rem;gap:2rem;flex-wrap:wrap;}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.cat-card{position:relative;height:380px;overflow:hidden;cursor:pointer;border-radius:2px;border:1px solid rgba(139,105,20,0.2);transition:transform 0.35s,box-shadow 0.35s;}
+.cat-card:hover{transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,0.5);}
+.cat-card-img{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 0.6s ease;}
+.cat-card:hover .cat-card-img{transform:scale(1.08);}
+.cat-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,5,0,0.88) 0%,rgba(10,5,0,0.3) 50%,rgba(10,5,0,0.1) 100%);transition:background 0.4s;}
+.cat-card:hover .cat-card-overlay{background:linear-gradient(to top,rgba(10,5,0,0.92) 0%,rgba(10,5,0,0.45) 55%,rgba(139,105,20,0.08) 100%);}
+.cat-card-body{position:absolute;bottom:0;left:0;right:0;padding:1.8rem 1.5rem;text-align:center;}
+.cat-icon{font-size:2rem;display:block;margin-bottom:0.6rem;}
+.cat-title{font-family:'Cinzel',serif;font-size:1.2rem;font-weight:600;letter-spacing:0.15em;color:var(--parch);margin-bottom:0.4rem;text-transform:uppercase;}
+.cat-card:hover .cat-title{color:var(--gold3);}
+.cat-desc{font-family:'EB Garamond',serif;font-size:0.95rem;font-style:italic;color:rgba(245,238,216,0.55);margin-bottom:0.8rem;transition:color 0.3s;}
+.cat-card:hover .cat-desc{color:rgba(245,238,216,0.75);}
+.cat-count{font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(139,105,20,0.4);padding:0.3rem 0.9rem;border-radius:1px;display:inline-block;transition:background 0.3s,border-color 0.3s;}
+.cat-card:hover .cat-count{background:var(--gold);color:var(--white);border-color:var(--gold);}
+.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:240px;gap:6px;}
+.gallery-item{position:relative;overflow:hidden;cursor:pointer;background:var(--ink);}
+.gallery-item.gi-wide{grid-column:span 2;}
+.gallery-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s ease,opacity 0.3s;}
+.gallery-item:hover .gallery-img{transform:scale(1.06);opacity:0.85;}
+.gallery-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,15,2,0.8) 0%,transparent 60%);opacity:0;transition:opacity 0.3s;display:flex;align-items:flex-end;padding:1rem;}
+.gallery-item:hover .gallery-overlay{opacity:1;}
+.gallery-caption{font-family:'EB Garamond',serif;font-size:0.85rem;color:var(--parch);font-style:italic;line-height:1.3;}
+
+/* Gallery Lightbox */
+.gallery-lb{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.97);align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:2rem;}
+.gallery-lb.open{display:flex;}
+.gallery-lb img{max-width:90vw;max-height:80vh;object-fit:contain;display:block;border:1px solid rgba(139,105,20,0.3);}
+.gallery-lb-close{position:absolute;top:1.5rem;right:2rem;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;opacity:0.6;transition:opacity 0.2s;z-index:1;}
+.gallery-lb-close:hover{opacity:1;}
+.gallery-lb-cap{font-family:'EB Garamond',serif;font-size:1rem;font-style:italic;color:rgba(245,238,216,0.6);text-align:center;}
+.gallery-lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(139,105,20,0.2);border:1px solid rgba(196,148,42,0.5);color:var(--gold3);font-size:1.5rem;width:48px;height:48px;cursor:pointer;border-radius:50%;transition:background 0.2s;display:flex;align-items:center;justify-content:center;}
+.gallery-lb-nav:hover{background:var(--gold);}
+.gallery-lb-prev{left:1.5rem;}
+.gallery-lb-next{right:1.5rem;}
+
+/* ══════════════ VIDEOS ══════════════ */
+#videos{position:relative;z-index:1;padding:8rem 4rem;background:var(--parch2);overflow:hidden;}
+.videos-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;}
+.videos-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:3rem;gap:2rem;flex-wrap:wrap;}
+.videos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+.video-card{position:relative;overflow:hidden;border:1px solid var(--border);background:var(--dark);cursor:pointer;border-radius:2px;transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s;}
+.video-card:hover{border-color:var(--gold2);transform:translateY(-5px);box-shadow:0 20px 50px rgba(0,0,0,0.3);}
+.video-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;transition:transform 0.4s;}
+.video-card:hover .video-thumb{transform:scale(1.05);}
+.video-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,15,2,0.88) 0%,rgba(26,15,2,0.15) 55%,transparent 100%);pointer-events:none;}
+.video-play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);width:58px;height:58px;border-radius:50%;background:rgba(139,105,20,0.25);border:1.5px solid rgba(196,148,42,0.75);display:flex;align-items:center;justify-content:center;transition:background 0.3s,transform 0.3s;pointer-events:none;backdrop-filter:blur(4px);}
+.video-card:hover .video-play-btn{background:var(--gold);border-color:var(--gold);transform:translate(-50%,-58%) scale(1.12);}
+.video-play-btn svg{width:18px;height:18px;fill:#fff;margin-left:3px;}
+.video-info{position:absolute;bottom:0;left:0;right:0;padding:1.2rem 1.4rem;}
+.video-category{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold3);margin-bottom:0.3rem;display:block;}
+.video-title{font-family:'EB Garamond',serif;font-size:1.05rem;font-style:italic;color:var(--parch);line-height:1.3;}
+.lightbox{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.95);align-items:center;justify-content:center;padding:2rem;}
+.lightbox.open{display:flex;}
+.lightbox-inner{position:relative;width:100%;max-width:900px;}
+.lightbox-close{position:absolute;top:-3rem;right:0;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;opacity:0.6;line-height:1;transition:opacity 0.2s;}
+.lightbox-close:hover{opacity:1;}
+.lightbox-inner iframe{width:100%;aspect-ratio:16/9;border:none;display:block;}
+
+/* ══════════════ PAQUETES ══════════════ */
+#paquetes{position:relative;z-index:1;padding:8rem 4rem;background:var(--white);}
+.paquetes-inner{max-width:1200px;margin:0 auto;}
+.packages-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;}
+.pkg-card{border:1px solid var(--border);background:var(--white);padding:2.5rem 2rem;position:relative;transition:transform 0.3s,box-shadow 0.3s;}
+.pkg-card:hover{transform:translateY(-6px);box-shadow:0 20px 50px var(--shadow);}
+.pkg-card.featured{background:var(--dark);border-color:var(--gold2);}
+.pkg-card.featured h3,.pkg-card.featured .pkg-name,.pkg-card.featured .pkg-desc,.pkg-card.featured .pkg-features li{color:var(--parch) !important;}
+.pkg-card.featured .pkg-features li::before{color:var(--gold3);}
+.pkg-badge{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.3rem 0.8rem;background:var(--gold);color:var(--white);display:inline-block;margin-bottom:1.5rem;border-radius:1px;}
+.pkg-name{font-family:'Cinzel',serif;font-size:1.3rem;letter-spacing:0.1em;color:var(--gold);margin-bottom:0.5rem;font-weight:600;}
+.pkg-price{font-family:'Cinzel Decorative',serif;font-size:2rem;color:var(--gold2);margin-bottom:0.3rem;line-height:1;}
+.pkg-desc{font-family:'EB Garamond',serif;font-size:0.95rem;font-style:italic;color:var(--ink2);margin-bottom:2rem;line-height:1.7;}
+.pkg-features{list-style:none;margin-bottom:2.5rem;}
+.pkg-features li{font-family:'EB Garamond',serif;font-size:1rem;color:var(--ink);padding:0.55rem 0;border-bottom:1px solid rgba(139,105,20,0.1);display:flex;align-items:center;gap:0.7rem;}
+.pkg-features li::before{content:'✦';font-size:0.4rem;color:var(--gold);flex-shrink:0;}
+.pkg-cta{display:block;text-align:center;padding:0.9rem;border:1.5px solid var(--gold);color:var(--gold);text-decoration:none;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.22em;text-transform:uppercase;transition:background 0.25s,color 0.25s;font-weight:600;border-radius:1px;}
+.pkg-cta:hover{background:var(--gold);color:var(--white);}
+.pkg-card.featured .pkg-cta{background:var(--gold);color:var(--white);border-color:var(--gold);}
+.pkg-card.featured .pkg-cta:hover{background:var(--gold2);border-color:var(--gold2);}
+
+/* ══════════════ PROCESO ══════════════ */
+#proceso{position:relative;z-index:1;padding:8rem 4rem;max-width:1200px;margin:0 auto;}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:5rem;position:relative;}
+.steps::before{content:'';position:absolute;top:2rem;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);opacity:0.35;}
+.step{text-align:center;padding:0 0.8rem;}
+.step-num{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.2em;color:var(--gold);display:block;margin-bottom:1rem;}
+.step-dot{width:4rem;height:4rem;border:1.5px solid rgba(139,105,20,0.3);border-radius:50%;margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:var(--white);position:relative;z-index:1;transition:border-color 0.3s,background 0.3s;}
+.step:hover .step-dot{border-color:var(--gold);background:rgba(139,105,20,0.08);}
+.step-title{font-family:'Cinzel',serif;font-size:0.85rem;font-weight:500;letter-spacing:0.05em;color:var(--ink);margin-bottom:0.5rem;}
+.step-desc{font-family:'EB Garamond',serif;font-size:0.95rem;font-style:italic;color:var(--ink2);line-height:1.7;}
+
+/* ══════════════ TESTIMONIOS ══════════════ */
+#testimonios{position:relative;z-index:1;padding:8rem 4rem;background:var(--parch2);max-width:100%;text-align:center;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.testi-inner{max-width:800px;margin:0 auto;}
+.testi-ornament{font-family:'Cinzel Decorative',serif;font-size:4rem;color:rgba(139,105,20,0.15);line-height:1;margin-bottom:-1rem;display:block;}
+.testi-quote{font-family:'EB Garamond',serif;font-size:clamp(1.3rem,2.5vw,1.8rem);font-weight:400;font-style:italic;line-height:1.7;color:var(--ink);margin:0 auto 1.5rem;}
+.testi-author{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--ink2);}
+.testi-dots{display:flex;justify-content:center;gap:0.5rem;margin-top:2rem;}
+.testi-dot{width:6px;height:6px;border-radius:50%;background:rgba(139,105,20,0.2);cursor:pointer;transition:background 0.2s;}
+.testi-dot.active{background:var(--gold);}
+
+/* ══════════════ CONTRATOS ══════════════ */
+#contratos{position:relative;z-index:1;padding:8rem 4rem;background:var(--white);}
+.contratos-inner{max-width:1200px;margin:0 auto;}
+.contrato-card{background:var(--parch);border:1px solid rgba(139,105,20,0.3);position:relative;padding:2rem;border-radius:2px;box-shadow:0 8px 40px rgba(42,20,0,0.1);transition:transform 0.35s,box-shadow 0.35s;overflow:hidden;}
+.contrato-card::before{content:'';position:absolute;inset:6px;border:1px solid rgba(139,105,20,0.18);pointer-events:none;border-radius:1px;}
+.contrato-card:hover{transform:translateY(-8px);box-shadow:0 24px 60px rgba(42,20,0,0.18);}
+.contrato-header{text-align:center;margin-bottom:1.2rem;border-bottom:1px solid rgba(139,105,20,0.2);padding-bottom:1rem;}
+.contrato-tipo{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:0.4rem;}
+.contrato-precio{font-family:'Cinzel Decorative',serif;font-size:1.8rem;color:var(--gold2);line-height:1.1;}
+.contrato-img{width:100%;display:block;border-radius:1px;border:1px solid rgba(139,105,20,0.15);}
+.contrato-desc{font-family:'EB Garamond',serif;font-size:0.95rem;font-style:italic;color:var(--ink2);line-height:1.7;margin-top:1rem;text-align:center;}
+.contratos-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-bottom:3rem;}
+.conditions-strip{background:var(--parch2);border:1px solid var(--border);border-radius:2px;padding:2rem 2.5rem;display:grid;grid-template-columns:repeat(5,1fr);gap:1.5rem;text-align:center;}
+.cond-item span{font-size:1.4rem;display:block;margin-bottom:0.4rem;}
+.cond-item p{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink2);line-height:1.5;}
+
+/* ══════════════ CONTACTO ══════════════ */
+#contacto{position:relative;z-index:1;padding:10rem 4rem;text-align:center;background:var(--dark);overflow:hidden;}
+#contacto::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(139,105,20,0.15) 0%,transparent 65%);}
+#contacto .section-label{color:var(--gold3);}
+#contacto h2{color:var(--parch);font-size:clamp(2.5rem,6vw,5rem);}
+#contacto h2 em{color:var(--gold3);}
+.cta-inner{position:relative;z-index:1;max-width:900px;margin:0 auto;}
+.cta-desc{font-family:'EB Garamond',serif;font-size:1.1rem;font-style:italic;line-height:1.9;color:rgba(245,238,216,0.65);max-width:540px;margin:1.5rem auto 3rem;}
+.contact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:5rem;background:rgba(139,105,20,0.18);border:1px solid rgba(139,105,20,0.18);}
+.contact-card{background:rgba(245,238,216,0.03);padding:2.5rem 1.5rem;text-align:left;transition:background 0.3s;}
+.contact-card:hover{background:rgba(245,238,216,0.07);}
+.cc-icon{font-size:1.5rem;margin-bottom:1rem;display:block;}
+.cc-text h4{font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.1em;font-weight:500;color:var(--parch);margin-bottom:0.4rem;}
+.cc-text p{font-family:'EB Garamond',serif;font-size:1rem;font-style:italic;color:rgba(245,238,216,0.5);line-height:1.6;}
+.cc-text a{color:var(--gold3);text-decoration:none;}
+.cc-text a:hover{text-decoration:underline;}
+
+/* ══════════════ FOOTER ══════════════ */
+footer{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;padding:2.5rem 4rem;border-top:1px solid rgba(139,105,20,0.25);background:#1A0F02;}
+.footer-logo{font-family:'Cinzel',serif;font-size:1.2rem;letter-spacing:0.25em;color:var(--gold);}
+.footer-links{display:flex;gap:2rem;list-style:none;}
+.footer-links a{font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,238,216,0.35);text-decoration:none;transition:color 0.2s;}
+.footer-links a:hover{color:var(--gold);}
+.footer-copy{font-family:'EB Garamond',serif;font-size:0.85rem;color:rgba(245,238,216,0.2);font-style:italic;}
+
+/* ══════════════ ADMIN PANEL ══════════════ */
+#adminBtn{display:none !important;}
+
+#adminPanel{
+  display:none;
+  position:fixed;inset:0;z-index:600;
+  background:rgba(10,5,0,0.6);
+  backdrop-filter:blur(4px);
+  overflow-y:auto;
+}
+#adminPanel.open{display:block;}
+.adm-box{
+  background:#1e1206;
+  border:1px solid rgba(139,105,20,0.4);
+  border-radius:4px;
+  max-width:900px;
+  margin:4rem auto;
+  padding:2.5rem;
+  position:relative;
+  box-shadow:0 30px 80px rgba(0,0,0,0.7);
+}
+.adm-close{
+  position:absolute;top:1rem;right:1.2rem;
+  background:none;border:none;color:rgba(245,238,216,0.4);
+  font-size:1.6rem;cursor:pointer;line-height:1;transition:color 0.2s;
+}
+.adm-close:hover{color:var(--gold3);}
+.adm-title{
+  font-family:'Cinzel',serif;font-size:1rem;letter-spacing:0.25em;
+  text-transform:uppercase;color:var(--gold3);margin-bottom:0.4rem;
+}
+.adm-sub{
+  font-family:'EB Garamond',serif;font-size:0.9rem;font-style:italic;
+  color:rgba(245,238,216,0.4);margin-bottom:2rem;
+}
+.adm-section{
+  border-top:1px solid rgba(139,105,20,0.2);
+  padding-top:1.5rem;margin-top:1.5rem;
+}
+.adm-section-title{
+  font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.25em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem;
+}
+.adm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.adm-img-slot{
+  border:1px dashed rgba(139,105,20,0.35);
+  border-radius:2px;padding:0.8rem;
+  display:flex;flex-direction:column;align-items:center;gap:0.6rem;
+  background:rgba(139,105,20,0.04);
+}
+.adm-img-slot label{
+  font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.15em;
+  text-transform:uppercase;color:rgba(245,238,216,0.5);
+  text-align:center;
+}
+.adm-img-slot img{
+  width:100%;height:90px;object-fit:cover;
+  border-radius:2px;border:1px solid rgba(139,105,20,0.2);
+}
+.adm-img-slot input[type=file]{display:none;}
+.adm-upload-btn{
+  font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.12em;
+  text-transform:uppercase;padding:0.4rem 0.9rem;
+  background:rgba(139,105,20,0.15);border:1px solid rgba(139,105,20,0.4);
+  color:var(--gold3);cursor:pointer;border-radius:1px;
+  transition:background 0.2s;width:100%;text-align:center;
+}
+.adm-upload-btn:hover{background:var(--gold);color:#fff;}
+.adm-uploading{font-size:0.7rem;color:var(--gold3);font-family:'Cinzel',serif;letter-spacing:0.1em;}
+.adm-field-row{display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1rem;}
+.adm-field-row label{font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,238,216,0.45);}
+.adm-field-row input,.adm-field-row textarea{
+  background:rgba(139,105,20,0.07);
+  border:1px solid rgba(139,105,20,0.25);
+  border-radius:2px;padding:0.6rem 0.9rem;
+  color:var(--parch);font-family:'EB Garamond',serif;font-size:1rem;
+  outline:none;transition:border-color 0.2s;
+  width:100%;
+}
+.adm-field-row input:focus,.adm-field-row textarea:focus{border-color:var(--gold2);}
+.adm-field-row textarea{resize:vertical;min-height:70px;}
+.adm-actions{display:flex;gap:1rem;margin-top:2rem;flex-wrap:wrap;}
+.adm-btn{
+  font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;
+  text-transform:uppercase;padding:0.7rem 1.6rem;cursor:pointer;
+  border-radius:1px;transition:all 0.2s;border:none;
+}
+.adm-btn-save{background:var(--gold);color:#fff;}
+.adm-btn-save:hover{background:var(--gold2);}
+.adm-btn-reset{background:transparent;border:1px solid rgba(196,50,50,0.5);color:#e06060;}
+.adm-btn-reset:hover{background:rgba(196,50,50,0.15);}
+.adm-toast{
+  display:none;position:fixed;bottom:6rem;right:2rem;z-index:700;
+  background:var(--gold);color:#fff;
+  font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.15em;
+  text-transform:uppercase;padding:0.8rem 1.6rem;border-radius:2px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+.adm-toast.show{display:block;}
+.adm-key-hint{
+  font-family:'EB Garamond',serif;font-size:0.8rem;font-style:italic;
+  color:rgba(245,238,216,0.25);margin-top:0.3rem;
+}
+.adm-tab{
+  font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.12em;
+  text-transform:uppercase;padding:0.45rem 0.9rem;cursor:pointer;
+  border-radius:1px;background:rgba(139,105,20,0.08);
+  border:1px solid rgba(139,105,20,0.25);color:rgba(245,238,216,0.5);
+  transition:all 0.2s;
+}
+.adm-tab:hover{background:rgba(139,105,20,0.2);color:var(--gold3);}
+.adm-tab.active{background:var(--gold);color:#fff;border-color:var(--gold);}
+.adm-tab-content{display:block;}
+.adm-btn-add{
+  background:rgba(139,105,20,0.15);border:1px dashed rgba(139,105,20,0.5);
+  color:var(--gold3);
+}
+.adm-btn-add:hover{background:rgba(139,105,20,0.3);}
+
+/* ══════════════ RESPONSIVE ══════════════ */
+@media(max-width:1024px){
+  nav{padding:0.9rem 1.5rem;}
+  nav ul{gap:1.2rem;}
+  #servicios,#paquetes,#proceso,#videos,#testimonios,#contacto,#contratos,#galeria{padding:5rem 1.5rem;}
+  .services-grid,.packages-grid{grid-template-columns:1fr 1fr;}
+  .steps{grid-template-columns:1fr 1fr;row-gap:2.5rem;}
+  .steps::before{display:none;}
+  .section-header{flex-direction:column;align-items:flex-start;}
+  .contact-grid{grid-template-columns:1fr 1fr;}
+  footer{flex-direction:column;text-align:center;padding:2rem 1.5rem;}
+  .videos-grid{grid-template-columns:1fr 1fr;}
+  #numbers{grid-template-columns:1fr 1fr;}
+  .contratos-grid{grid-template-columns:1fr;}
+  .conditions-strip{grid-template-columns:repeat(3,1fr);}
+  .cat-grid{grid-template-columns:1fr 1fr;}
+  .gallery-grid{grid-template-columns:1fr 1fr 1fr;}
+  .gallery-item.gi-wide{grid-column:span 1;}
+  .adm-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:640px){
+  nav ul{display:none;}
+  .nav-toggle{display:flex;}
+  nav{padding:0.8rem 1rem;}
+  .nav-logo-text{font-size:0.95rem;}
+  h1{font-size:2.8rem;}
+  .services-grid,.packages-grid{grid-template-columns:1fr;}
+  .contact-grid{grid-template-columns:1fr;}
+  .contratos-grid{grid-template-columns:1fr;}
+  .conditions-strip{grid-template-columns:repeat(2,1fr);}
+  .videos-grid{grid-template-columns:1fr;}
+  footer{flex-direction:column;text-align:center;padding:2rem 1rem;}
+  .footer-links{flex-wrap:wrap;justify-content:center;gap:1rem;}
+  #numbers{grid-template-columns:1fr 1fr;}
+  .cat-grid{grid-template-columns:1fr 1fr;}
+  .cat-card{height:260px;}
+  .gallery-grid{grid-template-columns:1fr 1fr;}
+  #galeria{padding:5rem 1rem;}
+  .adm-grid{grid-template-columns:1fr 1fr;}
+  .adm-box{margin:1rem;padding:1.5rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav id="mainNav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-circle"><img id="navLogoImg" src="" alt="Horeb"></div>
+    <div>
+      <span class="nav-logo-text">HOREB</span>
+      <span class="nav-logo-sub">Decoraciones &amp; Eventos</span>
+    </div>
+  </a>
+  <button class="nav-toggle" onclick="document.querySelector('nav').classList.toggle('nav-mobile-open')" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+  <ul onclick="document.querySelector('nav').classList.remove('nav-mobile-open')">
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#galeria">Galería</a></li>
+    <li><a href="#videos">Videos</a></li>
+    <li><a href="#paquetes">Paquetes</a></li>
+    <li><a href="#contratos">Contratos</a></li>
+    <li><a href="#contacto" class="nav-cta">Cotizar</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-texture"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow" id="heroEyebrow"></p>
+    <h1 id="heroTitle"></h1>
+    <div class="hero-rule"><span>✦</span></div>
+    <p class="hero-sub" id="heroSubtitle"></p>
+    <div class="hero-actions">
+      <a id="heroCtaPrimary" href="#contratos" class="btn-primary"></a>
+      <a id="heroCtaSecondary" href="#galeria" class="btn-outline"></a>
+    </div>
+  </div>
+  <div class="scroll-hint">Descubrir</div>
+</section>
+
+<!-- ══ STATS ══ -->
+<section id="numbers"></section>
+
+<!-- ══ SERVICIOS ══ -->
+<section id="servicios">
+  <div class="section-header reveal">
+    <div>
+      <p class="section-label" id="serviciosLabel"></p>
+      <h2 id="serviciosTitle"></h2>
+    </div>
+    <p class="section-desc" id="serviciosDesc"></p>
+  </div>
+  <div class="services-grid" id="serviciosGrid"></div>
+</section>
+
+<!-- ══ GALERÍA ══ -->
+<section id="galeria">
+  <div class="galeria-inner">
+    <div class="galeria-header">
+      <div class="reveal">
+        <p class="section-label" id="galeriaLabel"></p>
+        <h2 id="galeriaTitle"></h2>
+      </div>
+      <p class="section-desc reveal" id="galeriaDesc"></p>
+    </div>
+    <div id="galleryBack" style="display:none;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+      <button onclick="renderCategories()" style="background:none;border:1px solid rgba(212,170,85,0.5);color:var(--gold3);font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.55rem 1.4rem;cursor:pointer;border-radius:1px;transition:all 0.2s;" onmouseover="this.style.background='var(--gold)';this.style.color='#fff'" onmouseout="this.style.background='none';this.style.color='var(--gold3)'">← Volver</button>
+      <span id="galleryCatTitle" style="font-family:'Cinzel',serif;font-size:1rem;letter-spacing:0.15em;color:var(--gold3);"></span>
+    </div>
+    <div id="galleryGrid" class="cat-grid"></div>
+  </div>
+</section>
+
+<!-- Gallery Lightbox -->
+<div class="gallery-lb" id="galleryLightbox" onclick="if(event.target===this)closeGalleryLb()">
+  <button class="gallery-lb-close" onclick="closeGalleryLb()">&#x2715;</button>
+  <button class="gallery-lb-nav gallery-lb-prev" onclick="galleryNav(-1)">&#8592;</button>
+  <img id="galleryLbImg" src="" alt="">
+  <p class="gallery-lb-cap" id="galleryLbCaption"></p>
+  <button class="gallery-lb-nav gallery-lb-next" onclick="galleryNav(1)">&#8594;</button>
+</div>
+
+<!-- ══ VIDEOS ══ -->
+<section id="videos">
+  <div class="videos-inner">
+    <div class="videos-header">
+      <div class="reveal">
+        <p class="section-label" id="videosLabel"></p>
+        <h2 id="videosTitle"></h2>
+      </div>
+      <p class="section-desc reveal" id="videosDesc"></p>
+    </div>
+    <div class="videos-grid" id="videosGrid"></div>
+  </div>
+</section>
+
+<!-- Video Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeVideo(event)">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
+    <iframe id="lightbox-iframe" src="" allowfullscreen></iframe>
+  </div>
+</div>
+
+<!-- ══ PAQUETES ══ -->
+<section id="paquetes">
+  <div class="paquetes-inner">
+    <div class="section-header reveal">
+      <div>
+        <p class="section-label" id="paquetesLabel"></p>
+        <h2 id="paquetesTitle"></h2>
+      </div>
+      <p class="section-desc" id="paquetesDesc"></p>
+    </div>
+    <div class="packages-grid" id="packagesGrid"></div>
+  </div>
+</section>
+
+<!-- ══ PROCESO ══ -->
+<section id="proceso">
+  <div class="section-header reveal">
+    <div>
+      <p class="section-label" id="procesoLabel"></p>
+      <h2 id="procesoTitle"></h2>
+    </div>
+    <p class="section-desc" id="procesoDesc"></p>
+  </div>
+  <div class="steps" id="stepsGrid"></div>
+</section>
+
+<!-- ══ TESTIMONIOS ══ -->
+<section id="testimonios">
+  <div class="testi-inner">
+    <div class="reveal">
+      <p class="section-label" id="testimoniosLabel"></p>
+      <h2 id="testimoniosTitle"></h2>
+    </div>
+    <div class="reveal" style="margin-top:2.5rem;">
+      <span class="testi-ornament">"</span>
+      <p class="testi-quote" id="quote-text"></p>
+      <p class="testi-author" id="quote-author"></p>
+      <div class="testi-dots" id="testiDots"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CONTRATOS ══ -->
+<section id="contratos">
+  <div class="contratos-inner">
+    <div class="section-header reveal">
+      <div>
+        <p class="section-label" id="contratosLabel"></p>
+        <h2 id="contratosTitle"></h2>
+      </div>
+      <p class="section-desc" id="contratosDesc"></p>
+    </div>
+    <div class="contratos-grid reveal" id="contratosGrid"></div>
+    <div class="conditions-strip reveal" id="conditionsStrip"></div>
+    <div class="reveal" style="text-align:center;margin-top:3rem;">
+      <a id="contratosCta" href="#contacto" class="btn-primary"></a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CONTACTO ══ -->
+<section id="contacto">
+  <div class="cta-inner">
+    <div class="reveal">
+      <p class="section-label" id="contactoLabel"></p>
+      <h2 id="contactoTitle"></h2>
+      <p class="cta-desc" id="contactoDesc"></p>
+      <a id="contactoWaBtn" href="#" target="_blank" class="btn-primary"></a>
+    </div>
+    <div class="contact-grid reveal" id="contactGrid"></div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <span class="footer-logo" id="footerLogo"></span>
+  <ul class="footer-links" id="footerLinks"></ul>
+  <p class="footer-copy" id="footerCopy"></p>
+</footer>
+
+<!-- ══ ADMIN BUTTON (oculto – acceder vía #admin en la URL) ══ -->
+<button id="adminBtn" onclick="toggleAdmin()" title="Panel de Administración" style="display:none">⚙️</button>
+
+<!-- ══ ADMIN PANEL ══ -->
+<div id="adminPanel">
+  <div class="adm-box">
+    <button class="adm-close" onclick="toggleAdmin()">&#x2715;</button>
+    <p class="adm-title">✦ Panel de Administración — Horeb ✦</p>
+    <p class="adm-sub">Edita todos los textos e imágenes. Los cambios se guardan en tu navegador. Accede siempre con <strong style="color:var(--gold3);">#admin</strong> al final de la URL.</p>
+
+    <!-- TABS -->
+    <div id="admTabs" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;border-bottom:1px solid rgba(139,105,20,0.2);padding-bottom:1rem;">
+      <button class="adm-tab active" onclick="showTab('tab-imgs')">🖼 Imágenes</button>
+      <button class="adm-tab" onclick="showTab('tab-hero')">🏠 Hero</button>
+      <button class="adm-tab" onclick="showTab('tab-stats')">📊 Estadísticas</button>
+      <button class="adm-tab" onclick="showTab('tab-servicios')">🛎 Servicios</button>
+      <button class="adm-tab" onclick="showTab('tab-galeria')">🖼 Galería</button>
+      <button class="adm-tab" onclick="showTab('tab-videos')">🎬 Videos</button>
+      <button class="adm-tab" onclick="showTab('tab-paquetes')">💎 Paquetes</button>
+      <button class="adm-tab" onclick="showTab('tab-proceso')">📋 Proceso</button>
+      <button class="adm-tab" onclick="showTab('tab-testi')">💬 Testimonios</button>
+      <button class="adm-tab" onclick="showTab('tab-contratos')">📄 Contratos</button>
+      <button class="adm-tab" onclick="showTab('tab-contacto')">📱 Contacto</button>
+    </div>
+
+    <!-- TAB: IMÁGENES -->
+    <div id="tab-imgs" class="adm-tab-content">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Logo &amp; Contratos</p>
+        <div class="adm-grid" id="admMainImgs"></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Slides del Hero</p>
+        <div class="adm-grid" id="admHeroImgs"></div>
+        <button class="adm-btn adm-btn-add" style="margin-top:1rem;" onclick="addHeroSlide()">+ Agregar Slide</button>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Portadas de Categorías</p>
+        <div class="adm-grid" id="admCatImgs"></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Galería — Imágenes (ilimitadas)</p>
+        <div class="adm-grid" id="admGalleryImgs"></div>
+        <button class="adm-btn adm-btn-add" style="margin-top:1rem;" onclick="addGalleryImage()">+ Agregar Imagen a Galería</button>
+      </div>
+    </div>
+
+    <!-- TAB: HERO -->
+    <div id="tab-hero" class="adm-tab-content" style="display:none;">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Textos del Hero</p>
+        <div class="adm-field-row"><label>Eyebrow (texto pequeño encima)</label><input id="tf_hero_eyebrow" type="text"></div>
+        <div class="adm-field-row"><label>Título línea 1</label><input id="tf_hero_titleLine1" type="text"></div>
+        <div class="adm-field-row"><label>Título énfasis (dorado)</label><input id="tf_hero_titleEm" type="text"></div>
+        <div class="adm-field-row"><label>Subtítulo / descripción</label><textarea id="tf_hero_subtitle"></textarea></div>
+        <div class="adm-field-row"><label>Botón primario — Texto</label><input id="tf_hero_ctaPrimText" type="text"></div>
+        <div class="adm-field-row"><label>Botón primario — Enlace</label><input id="tf_hero_ctaPrimHref" type="text"></div>
+        <div class="adm-field-row"><label>Botón secundario — Texto</label><input id="tf_hero_ctaSecText" type="text"></div>
+        <div class="adm-field-row"><label>Botón secundario — Enlace</label><input id="tf_hero_ctaSecHref" type="text"></div>
+      </div>
+    </div>
+
+    <!-- TAB: STATS -->
+    <div id="tab-stats" class="adm-tab-content" style="display:none;">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Estadísticas (4 números)</p>
+        <div id="admStatsFields"></div>
+      </div>
+    </div>
+
+    <!-- TAB: SERVICIOS -->
+    <div id="tab-servicios" class="adm-tab-content" style="display:none;">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Encabezado de Servicios</p>
+        <div class="adm-field-row"><label>Etiqueta</label><input id="tf_sv_label" type="text"></div>
+        <div class="adm-field-row"><label>Título parte 1</label><input id="tf_sv_title1" type="text"></div>
+        <div class="adm-field-row"><label>Título énfasis</label><input id="tf_sv_titleEm" type="text"></div>
+        <div class="adm-field-row"><label>Descripción</label><textarea id="tf_sv_desc"></textarea></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Tarjetas de Servicios</p>
+        <div id="admServiciosFields"></div>
+      </div>
+    </div>
+
+    <!-- TAB: GALERÍA -->
+    <div id="tab-galeria" class="adm-tab-content" style="display:none;">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Encabezado de Galería</p>
+        <div class="adm-field-row"><label>Etiqueta</label><input id="tf_gal_label" type="text"></div>
+        <div class="adm-field-row"><label>Título parte 1</label><input id="tf_gal_title1" type="text"></div>
+        <div class="adm-field-row"><label>Título énfasis</label><input id="tf_gal_titleEm" type="text"></div>
+        <div class="adm-field-row"><label>Descripción</label><textarea id="tf_gal_desc"></textarea></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Metadatos de imágenes de galería (caption y categoría)</p>
+        <div id="admGalMeta"></div>
+      </div>
+    </div>
+
+    <!-- TAB: VIDEOS -->
+    <div id="tab-videos" class="adm-tab-content" style="display:none;">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Encabezado de Videos</p>
+        <div class="adm-field-row"><label>Etiqueta</label><input id="tf_vid_label" type="text"></div>
+        <div class="adm-field-row"><label>Título parte 1</label><input id="tf_vid_title1" type="text"></div>
+        <div class="adm-field-row"><label>Título énfasis</label><input id="tf_vid_titleEm" type="text"></div>
+        <div class="adm-field-row"><label>Descripción</label><textarea id="tf_vid_desc"></textarea></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Videos de YouTube</p>
+        <div id="admVideoFields"></div>
+        <button class="adm-btn adm-btn-add" style="margin-top:1rem;" onclick="addVideo()">+ Agregar Video</button>
+      </div>
+    </div>
+
+    <!-- TAB: PAQUETES -->
+    <div id="tab-paquetes" class="adm-tab-content" style="display:none;">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Encabezado de Paquetes</p>
+        <div class="adm-field-row"><label>Etiqueta</label><input id="tf_pkg_label" type="text"></div>
+        <div class="adm-field-row"><label>Título parte 1</label><input id="tf_pkg_title1" type="text"></div>
+        <div class="adm-field-row"><label>Título énfasis</label><input id="tf_pkg_titleEm" type="text"></div>
+        <div class="adm-field-row"><label>Descripción</label><textarea id="tf_pkg_desc"></textarea></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Paquetes</p>
+        <div id="admPaquetesFields"></div>
+      </div>
+    </div>
+
+    <!-- TAB: PROCESO -->
+    <div id="tab-proceso" class="adm-tab-content" style="display:none;">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Encabezado del Proceso</p>
+        <div class="adm-field-row"><label>Etiqueta</label><input id="tf_proc_label" type="text"></div>
+        <div class="adm-field-row"><label>Título parte 1</label><input id="tf_proc_title1" type="text"></div>
+        <div class="adm-field-row"><label>Título énfasis</label><input id="tf_proc_titleEm" type="text"></div>
+        <div class="adm-field-row"><label>Descripción</label><textarea id="tf_proc_desc"></textarea></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Pasos del Proceso</p>
+        <div id="admProcesoFields"></div>
+      </div>
+    </div>
+
+    <!-- TAB: TESTIMONIOS -->
+    <div id="tab-testi" class="adm-tab-content" style="display:none;">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Encabezado de Testimonios</p>
+        <div class="adm-field-row"><label>Etiqueta</label><input id="tf_testi_label" type="text"></div>
+        <div class="adm-field-row"><label>Título parte 1</label><input id="tf_testi_title1" type="text"></div>
+        <div class="adm-field-row"><label>Título énfasis</label><input id="tf_testi_titleEm" type="text"></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Testimonios</p>
+        <div id="admTestiFields"></div>
+        <button class="adm-btn adm-btn-add" style="margin-top:1rem;" onclick="addTestimonio()">+ Agregar Testimonio</button>
+      </div>
+    </div>
+
+    <!-- TAB: CONTRATOS -->
+    <div id="tab-contratos" class="adm-tab-content" style="display:none;">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Encabezado de Contratos</p>
+        <div class="adm-field-row"><label>Etiqueta</label><input id="tf_ct_label" type="text"></div>
+        <div class="adm-field-row"><label>Título parte 1</label><input id="tf_ct_title1" type="text"></div>
+        <div class="adm-field-row"><label>Título énfasis</label><input id="tf_ct_titleEm" type="text"></div>
+        <div class="adm-field-row"><label>Descripción</label><textarea id="tf_ct_desc"></textarea></div>
+        <div class="adm-field-row"><label>CTA — Texto del botón</label><input id="tf_ct_ctaText" type="text"></div>
+        <div class="adm-field-row"><label>CTA — Enlace</label><input id="tf_ct_ctaHref" type="text"></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Contratos</p>
+        <div id="admContratosFields"></div>
+      </div>
+    </div>
+
+    <!-- TAB: CONTACTO -->
+    <div id="tab-contacto" class="adm-tab-content" style="display:none;">
+      <div class="adm-section" style="border-top:none;padding-top:0;">
+        <p class="adm-section-title">Encabezado de Contacto</p>
+        <div class="adm-field-row"><label>Etiqueta</label><input id="tf_cn_label" type="text"></div>
+        <div class="adm-field-row"><label>Título parte 1</label><input id="tf_cn_title1" type="text"></div>
+        <div class="adm-field-row"><label>Título énfasis</label><input id="tf_cn_titleEm" type="text"></div>
+        <div class="adm-field-row"><label>Descripción</label><textarea id="tf_cn_desc"></textarea></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">WhatsApp &amp; Redes</p>
+        <div class="adm-field-row"><label>WhatsApp principal (número, ej: 573145004912)</label><input id="tf_wa_principal" type="text"></div>
+        <div class="adm-field-row"><label>WhatsApp principal (display, ej: 314 500 4912)</label><input id="tf_wa_display" type="text"></div>
+        <div class="adm-field-row"><label>Instagram handle</label><input id="tf_instagram" type="text"></div>
+        <div class="adm-field-row"><label>Instagram URL</label><input id="tf_instagramHref" type="text"></div>
+        <div class="adm-field-row"><label>Ubicación línea 1</label><input id="tf_cn_ubic1" type="text"></div>
+        <div class="adm-field-row"><label>Ubicación línea 2</label><input id="tf_cn_ubic2" type="text"></div>
+        <div class="adm-field-row"><label>Horario línea 1</label><input id="tf_cn_hora1" type="text"></div>
+        <div class="adm-field-row"><label>Horario línea 2</label><input id="tf_cn_hora2" type="text"></div>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Números de WhatsApp adicionales</p>
+        <div id="admWaNumbers"></div>
+        <button class="adm-btn adm-btn-add" style="margin-top:1rem;" onclick="addWaNumber()">+ Agregar Número</button>
+      </div>
+      <div class="adm-section">
+        <p class="adm-section-title">Footer</p>
+        <div class="adm-field-row"><label>Copyright</label><input id="tf_footer_copy" type="text"></div>
+      </div>
+    </div>
+
+    <div class="adm-actions" style="margin-top:2rem;">
+      <button class="adm-btn adm-btn-save" onclick="saveAdmin()">✦ Guardar Todos los Cambios</button>
+      <button class="adm-btn adm-btn-reset" onclick="resetAdmin()">↺ Restaurar Valores por Defecto</button>
+    </div>
+    <p class="adm-key-hint" style="margin-top:1rem;">Para subir imágenes a producción configura tu API Key de <a href="https://imgbb.com" target="_blank" style="color:var(--gold3);">imgbb.com</a> — edita la variable IMGBB_KEY en el código.</p>
+  </div>
+</div>
+
+<div class="adm-toast" id="admToast">✦ Guardado correctamente</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// HOREB — CONTENIDO POR DEFECTO
+// ════════════════════════════════════════════════════════
+const DEFAULT_CONTENT = {
+  logo: "./images/img_00.jpg",
+  hero: {
+    eyebrow: "Decoraciones y Eventos",
+    titleLine1: "Momentos que",
+    titleEm: "Perduran",
+    subtitle: "Bodas, quinceañeros y eventos corporativos diseñados con elegancia, precisión y pasión. Cada detalle, perfectamente orquestado.",
+    ctaPrimaryText: "Ver Contratos",
+    ctaPrimaryHref: "#contratos",
+    ctaSecondaryText: "Nuestra Galería",
+    ctaSecondaryHref: "#galeria",
+    slides: [
+      "./images/img_03.jpg","./images/img_04.jpg","./images/img_05.jpg",
+      "./images/img_06.jpg","./images/img_07.jpg"
+    ]
+  },
+  stats: [
+    { target: 200, suffix: "+", label: "Eventos Realizados" },
+    { target: 8,   suffix: "+", label: "Años de Experiencia" },
+    { target: 98,  suffix: "%", label: "Clientes Felices" },
+    { target: 15,  suffix: "+", label: "Ciudades Atendidas" }
+  ],
+  servicios: {
+    label: "Lo Que Hacemos",
+    title1: "Nuestros",
+    titleEm: "Servicios",
+    desc: "Cada celebración merece ser única. Ofrecemos soluciones integrales de decoración adaptadas a tu visión y presupuesto.",
+    items: [
+      { icon:"💍", title:"Bodas", desc:"Decoración completa del salón, arcos florales, pista de cristal, cielo estrellado con velos, sillas Tiffany, caminos florales y maestra de ceremonia.", tags:["Arco en Luces","Sillas Tiffany","Pista Cristal","Humo"] },
+      { icon:"👑", title:"Quinceañeros", desc:"Tronos florales, árboles Sakura, mariposas neon, decoración temática personalizada para el día más especial de la quinceañera.", tags:["Trono Floral","Árboles Sakura","Temático"] },
+      { icon:"🏢", title:"Corporativos", desc:"Galas empresariales y eventos corporativos con ambientación elegante, recibos digitales en tiempo real y coordinación impecable.", tags:["Gala","Coordinación","Ambientación"] },
+      { icon:"🌸", title:"Decoración Floral", desc:"Caminos florales, centros de mesa con candelabros, arreglos con hortensias, rosas y flores naturales para cualquier tipo de evento.", tags:["Flores Naturales","Caminos","Centros de Mesa"] },
+      { icon:"✨", title:"Iluminación", desc:"Pista espejo con aro LED, wisteria luminosa, luces LED de ambiente, efectos de humo y letras luminosas personalizadas con los nombres de los novios.", tags:["LED","Letras Luminosas","Efectos"] },
+      { icon:"📋", title:"Protocolo y Ceremonia", desc:"Maestra de ceremonia asesora de protocolo, coordinación del montaje y desmontaje el mismo día del evento en el lugar acordado.", tags:["Protocolo","Coordinación","Montaje"] }
+    ]
+  },
+  galeria: {
+    label: "Nuestro Trabajo",
+    title1: "Galería de",
+    titleEm: "Eventos",
+    desc: "Selecciona una categoría para explorar nuestros eventos.",
+    categories: {
+      boda:       { label:"Bodas",        icon:"💍", desc:"Ceremonias y recepciones" },
+      quinces:    { label:"Quinceañeros", icon:"👑", desc:"El día más especial" },
+      decoracion: { label:"Decoraciones", icon:"✨", desc:"Ambientación y montajes" },
+      otras:      { label:"Otras",        icon:"🎉", desc:"Momentos especiales" }
+    },
+    categoryOrder: ["boda","quinces","decoracion","otras"],
+    catCovers: {
+      decoracion: "./images/img_28.jpg",
+      boda:       "./images/img_29.jpg",
+      quinces:    "./images/img_30.jpg",
+      otras:      "./images/img_31.jpg"
+    },
+    images: [
+      { src:"./images/img_08.jpg", cat:"decoracion", caption:"Salón con cielo estrellado y camino floral" },
+      { src:"./images/img_09.jpg", cat:"boda",       caption:"Novios frente a arco floral rosa y durazno" },
+      { src:"./images/img_10.jpg", cat:"boda",       caption:"Novios bajo arco de rosas blancas" },
+      { src:"./images/img_11.jpg", cat:"quinces",    caption:"Quinceañera en jardín con vestido rosa" },
+      { src:"./images/img_12.jpg", cat:"quinces",    caption:"Decoración con arco floral y letras luminosas 15" },
+      { src:"./images/img_13.jpg", cat:"boda",       caption:"Novios frente a arco de rosas rojas y blancas" },
+      { src:"./images/img_14.jpg", cat:"boda",       caption:"Novios con ramo rojo y arco floral bicolor" },
+      { src:"./images/img_15.jpg", cat:"boda",       caption:"Novios y damas en pista de cristal espejo" },
+      { src:"./images/img_16.jpg", cat:"quinces",    caption:"Quinceañera con arco de rosas rosadas" },
+      { src:"./images/img_17.jpg", cat:"boda",       caption:"Novios admirando los anillos con ramo de rosas" },
+      { src:"./images/img_18.jpg", cat:"otras",      caption:"Invitados en pista de cristal espejo iluminada" },
+      { src:"./images/img_19.jpg", cat:"otras",      caption:"Familia celebrando en pista espejo con luces" },
+      { src:"./images/img_20.jpg", cat:"otras",      caption:"Pareja junto a árbol sakura decorativo" },
+      { src:"./images/img_21.jpg", cat:"boda",       caption:"Primer vals en pista espejo con efecto de humo" },
+      { src:"./images/img_22.jpg", cat:"quinces",    caption:"Quinceañera azul con pastel y globos dorados" },
+      { src:"./images/img_23.jpg", cat:"quinces",    caption:"Quinceañera bailando con su chambelán" },
+      { src:"./images/img_24.jpg", cat:"boda",       caption:"Vals nupcial con efecto humo y arco floral verde" },
+      { src:"./images/img_25.jpg", cat:"otras",      caption:"Invitados llegando al salón con árboles decorativos" },
+      { src:"./images/img_26.jpg", cat:"decoracion", caption:"Salón elegante con cortinas y luces estrelladas" },
+      { src:"./images/img_27.jpg", cat:"decoracion", caption:"Montaje de mesas vestidas con sillas Tiffany" }
+    ]
+  },
+  videos: {
+    label: "En Acción",
+    title1: "Videos de",
+    titleEm: "Eventos",
+    desc: "Mira cómo transformamos cada espacio en una experiencia inolvidable.",
+    items: [
+      { embedUrl:"https://www.youtube.com/embed/dQw4w9WgXcQ", thumb:"https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg", category:"Bodas", title:"Boda de Ensueño — Salón Imperial" },
+      { embedUrl:"https://www.youtube.com/embed/dQw4w9WgXcQ", thumb:"https://img.youtube.com/vi/9bZkp7q19f0/hqdefault.jpg", category:"Quinceañeros", title:"Quinceañero — Tema Jardín Encantado" },
+      { embedUrl:"https://www.youtube.com/embed/dQw4w9WgXcQ", thumb:"https://img.youtube.com/vi/kJQP7kiw5Fk/hqdefault.jpg", category:"Corporativos", title:"Gala Empresarial — Gran Salón" }
+    ]
+  },
+  paquetes: {
+    label: "Opciones",
+    title1: "Nuestros",
+    titleEm: "Paquetes",
+    desc: "Diseñamos paquetes adaptados a tu presupuesto sin sacrificar elegancia ni calidad.",
+    items: [
+      { name:"Esencial", price:"$7.000.000", featured:false, badge:"", desc:"Todo lo necesario para una boda elegante y memorable", features:["Arco de boda decorado en luces","Mesa de los novios decorada","Mesa para cofre","Alfombra para los novios","Cielo estrellado con velos","Nombre de los novios","Caminos florales","100 sillas vestidas","Arco en la entrada","Decoración del salón"], ctaText:"Cotizar este Paquete", ctaHref:"#contacto" },
+      { name:"Premium", price:"$16.500.000", featured:true, badge:"★ Más Completo", desc:"La experiencia completa con todos los detalles incluidos", features:["Todo lo del paquete Esencial","4 árboles decorativos","Maqueta grande artificial","2 sillas Tiffany para novios","Pista de cristal con luces","Efectos de humo","Maestra de ceremonia","30 mesas vestidas","300 sillas Tiffany","Coordinación total del evento"], ctaText:"Cotizar este Paquete", ctaHref:"#contacto" },
+      { name:"A Medida", price:"Tu Presupuesto", featured:false, badge:"", desc:"Diseñamos el paquete perfecto según tus necesidades específicas", features:["Consulta personalizada gratuita","Selección de elementos específicos","Adaptado a tu presupuesto","Cualquier tipo de evento","Bodas · Quinceañeros","Corporativos · Cumpleaños","Contrato detallado","Asesoría de protocolo","Montaje y desmontaje","Seguimiento personalizado"], ctaText:"Solicitar Asesoría", ctaHref:"#contacto" }
+    ]
+  },
+  proceso: {
+    label: "Cómo Trabajamos",
+    title1: "Nuestro",
+    titleEm: "Proceso",
+    desc: "Cinco pasos simples para que tu evento sea perfecto, desde la idea hasta el último detalle.",
+    steps: [
+      { icon:"📞", title:"Consulta",  desc:"Nos contactas y agendamos una reunión para conocer tu visión" },
+      { icon:"📋", title:"Propuesta", desc:"Diseñamos una propuesta personalizada con todos los detalles" },
+      { icon:"✍️", title:"Contrato",  desc:"Firmamos contrato claro con servicios, valor y condiciones" },
+      { icon:"🎨", title:"Montaje",   desc:"Llegamos el día del evento y montamos cada detalle con perfección" },
+      { icon:"🌟", title:"Tu Evento", desc:"Disfrutas tu celebración. Nosotros nos encargamos del desmontaje" }
+    ]
+  },
+  testimonios: {
+    label: "Lo que Dicen",
+    title1: "Nuestros",
+    titleEm: "Clientes",
+    quotes: [
+      { text:"Horeb transformó nuestra boda en algo que superó todos nuestros sueños. Cada detalle fue perfecto, el contrato claro y el equipo siempre disponible.", author:"— María & Andrés · Boda 2024" },
+      { text:"El quinceañero de mi hija fue espectacular. El inventario de elementos es increíble y los precios muy justos. Superaron todas nuestras expectativas.", author:"— Claudia R. · Quinceañero 2024" },
+      { text:"Nuestro evento corporativo fue un éxito rotundo. Profesionalismo, coordinación impecable y una atención personalizada de principio a fin.", author:"— Empresa Tecnoandina · Gala 2024" }
+    ]
+  },
+  contratos: {
+    label: "Transparencia Total",
+    title1: "Nuestros",
+    titleEm: "Contratos",
+    desc: "Trabajamos con contratos claros y firmados. Cada servicio queda por escrito para tu tranquilidad total.",
+    items: [
+      { tipo:"✦ Boda · Contrato Premium ✦", precio:"$16.500.000", img:"./images/img_01.png", desc:"Decoración completa del salón, 300 sillas Tiffany, arco en luces, pista de cristal, humo, maestra de ceremonia y más." },
+      { tipo:"✦ Boda · Contrato Básico ✦",  precio:"$7.000.000",  img:"./images/img_02.png", desc:"Arco decorado en luces, mesa de novios, alfombra, cielo estrellado, caminos florales y 100 sillas vestidas." }
+    ],
+    conditions: [
+      { icon:"📋", text:"Instalación el día del evento" },
+      { icon:"🤝", text:"Contrato claro y detallado" },
+      { icon:"💰", text:"Anticipo para reservar fecha" },
+      { icon:"🔧", text:"Desmontaje incluido" },
+      { icon:"✅", text:"Total transparencia" }
+    ],
+    ctaText: "Solicitar mi Cotización →",
+    ctaHref: "#contacto"
+  },
+  contacto: {
+    label: "Hablemos",
+    title1: "Tu Evento",
+    titleEm: "Perfecto",
+    desc: "Contáctanos hoy y comencemos a diseñar el evento de tus sueños. Respondemos en menos de 24 horas.",
+    whatsappPrincipal: "573145004912",
+    whatsappPrincipalDisplay: "314 500 4912",
+    whatsappNumbers: [
+      { number:"573145004912", display:"314 500 4912" },
+      { number:"573158741880", display:"315 874 1880" },
+      { number:"573105394996", display:"310 539 4996" }
+    ],
+    ubicacion: { line1:"Colombia", line2:"Atendemos en múltiples ciudades" },
+    horario:   { line1:"Lunes a Sábado", line2:"8:00 AM – 7:00 PM" },
+    instagram: "@horeb_eventos",
+    instagramHref: "#"
+  },
+  footer: {
+    logoText: "✦ HOREB ✦",
+    links: [
+      { text:"Servicios", href:"#servicios" },
+      { text:"Galería",   href:"#galeria" },
+      { text:"Contratos", href:"#contratos" },
+      { text:"Contacto",  href:"#contacto" }
+    ],
+    copy: "© 2025 Horeb Decoraciones y Eventos. Todos los derechos reservados."
+  }
+};
+
+// ════════════════════════════════════════════════════════
+// MERGE: DEFAULT + localStorage overrides
+// ════════════════════════════════════════════════════════
+const IMGBB_KEY = "0878b7187fc20be806bcae91d2268089";
+
+function loadContent() {
+  const C = JSON.parse(JSON.stringify(DEFAULT_CONTENT)); // deep clone
+  try {
+    const saved = JSON.parse(localStorage.getItem('horeb_content') || '{}');
+    // Deep merge only the keys that exist in saved
+    deepMerge(C, saved);
+  } catch(e){}
+  return C;
+}
+
+function deepMerge(target, source) {
+  for (const key in source) {
+    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      if (!target[key]) target[key] = {};
+      deepMerge(target[key], source[key]);
+    } else if (source[key] !== undefined && source[key] !== null && source[key] !== '') {
+      target[key] = source[key];
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// RENDER ALL SECTIONS
+// ════════════════════════════════════════════════════════
+let C; // current content
+
+function renderAll() {
+  C = loadContent();
+  renderNav();
+  renderHero();
+  startHeroSlider();
+  renderStats();
+  renderServicios();
+  renderGaleriaHeader();
+  renderVideos();
+  renderPaquetes();
+  renderProceso();
+  renderTestimonios();
+  renderContratos();
+  renderContacto();
+  renderFooter();
+  renderCategories();
+  initScrollReveal();
+  initCounters();
+}
+
+function renderNav() {
+  document.getElementById('navLogoImg').src = C.logo;
+}
+
+function renderHero() {
+  document.getElementById('heroEyebrow').textContent = C.hero.eyebrow;
+  document.getElementById('heroTitle').innerHTML = C.hero.titleLine1 + '<br><em>' + C.hero.titleEm + '</em>';
+  document.getElementById('heroSubtitle').textContent = C.hero.subtitle;
+  const ctaP = document.getElementById('heroCtaPrimary');
+  ctaP.textContent = C.hero.ctaPrimaryText;
+  ctaP.href = C.hero.ctaPrimaryHref;
+  const ctaS = document.getElementById('heroCtaSecondary');
+  ctaS.textContent = C.hero.ctaSecondaryText;
+  ctaS.href = C.hero.ctaSecondaryHref;
+  // Dynamic slides — rebuild DOM
+  const heroBg = document.getElementById('heroBg');
+  heroBg.innerHTML = '';
+  C.hero.slides.forEach((s,i) => {
+    const div = document.createElement('div');
+    div.className = 'hero-slide' + (i===0?' active':'');
+    div.id = 'slide'+i;
+    if(s) div.style.backgroundImage = 'url('+s+')';
+    heroBg.appendChild(div);
+  });
+  curSlide = 0;
+}
+
+function renderStats() {
+  const sec = document.getElementById('numbers');
+  sec.innerHTML = C.stats.map(s =>
+    `<div class="stat-box reveal">
+      <span class="stat-num" data-target="${s.target}" data-suffix="${s.suffix}">0</span>
+      <span class="stat-label">${s.label}</span>
+    </div>`
+  ).join('');
+}
+
+function renderServicios() {
+  const sv = C.servicios;
+  document.getElementById('serviciosLabel').textContent = sv.label;
+  document.getElementById('serviciosTitle').innerHTML = sv.title1 + ' <em>' + sv.titleEm + '</em>';
+  document.getElementById('serviciosDesc').textContent = sv.desc;
+  document.getElementById('serviciosGrid').innerHTML = sv.items.map((it,i) =>
+    `<div class="service-card reveal">
+      <span class="service-num">0${i+1}</span>
+      <span class="service-icon">${it.icon}</span>
+      <h3>${it.title}</h3>
+      <p>${it.desc}</p>
+      <div class="service-tags">${it.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    </div>`
+  ).join('');
+}
+
+function renderGaleriaHeader() {
+  const g = C.galeria;
+  document.getElementById('galeriaLabel').textContent = g.label;
+  document.getElementById('galeriaTitle').innerHTML = g.title1 + ' <em>' + g.titleEm + '</em>';
+  document.getElementById('galeriaDesc').textContent = g.desc;
+}
+
+function renderVideos() {
+  const v = C.videos;
+  document.getElementById('videosLabel').textContent = v.label;
+  document.getElementById('videosTitle').innerHTML = v.title1 + ' <em>' + v.titleEm + '</em>';
+  document.getElementById('videosDesc').textContent = v.desc;
+  document.getElementById('videosGrid').innerHTML = v.items.map(it =>
+    `<div class="video-card reveal" onclick="openVideo('${it.embedUrl}')">
+      <img class="video-thumb" src="${it.thumb}" alt="${it.title}" loading="lazy">
+      <div class="video-overlay"></div>
+      <div class="video-play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <div class="video-info">
+        <span class="video-category">${it.category}</span>
+        <p class="video-title">${it.title}</p>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function renderPaquetes() {
+  const p = C.paquetes;
+  document.getElementById('paquetesLabel').textContent = p.label;
+  document.getElementById('paquetesTitle').innerHTML = p.title1 + ' <em>' + p.titleEm + '</em>';
+  document.getElementById('paquetesDesc').textContent = p.desc;
+  document.getElementById('packagesGrid').innerHTML = p.items.map(it => {
+    const featClass = it.featured ? ' featured' : '';
+    const badgeHtml = it.badge ? `<span class="pkg-badge">${it.badge}</span><br>` : '';
+    const priceStyle = it.featured ? ' style="color:var(--gold3);"' : (it.price==='Tu Presupuesto'?' style="font-size:1.4rem;margin-top:0.3rem;"':'');
+    return `<div class="pkg-card${featClass} reveal">
+      ${badgeHtml}
+      <div class="pkg-name">${it.name}</div>
+      <div class="pkg-price"${priceStyle}>${it.price}</div>
+      <p class="pkg-desc">${it.desc}</p>
+      <ul class="pkg-features">${it.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+      <a href="${it.ctaHref}" class="pkg-cta">${it.ctaText}</a>
+    </div>`;
+  }).join('');
+}
+
+function renderProceso() {
+  const p = C.proceso;
+  document.getElementById('procesoLabel').textContent = p.label;
+  document.getElementById('procesoTitle').innerHTML = p.title1 + ' <em>' + p.titleEm + '</em>';
+  document.getElementById('procesoDesc').textContent = p.desc;
+  document.getElementById('stepsGrid').innerHTML = p.steps.map((s,i) =>
+    `<div class="step reveal">
+      <span class="step-num">0${i+1}</span>
+      <div class="step-dot">${s.icon}</div>
+      <h4 class="step-title">${s.title}</h4>
+      <p class="step-desc">${s.desc}</p>
+    </div>`
+  ).join('');
+}
+
+let testiIdx = 0;
+function renderTestimonios() {
+  const t = C.testimonios;
+  document.getElementById('testimoniosLabel').textContent = t.label;
+  document.getElementById('testimoniosTitle').innerHTML = t.title1 + ' <em>' + t.titleEm + '</em>';
+  document.getElementById('quote-text').textContent = t.quotes[0].text;
+  document.getElementById('quote-author').textContent = t.quotes[0].author;
+  const dotsEl = document.getElementById('testiDots');
+  dotsEl.innerHTML = t.quotes.map((q,i) =>
+    `<div class="testi-dot${i===0?' active':''}" onclick="changeQuote(${i})"></div>`
+  ).join('');
+}
+
+function changeQuote(i) {
+  const quotes = C.testimonios.quotes;
+  document.getElementById('quote-text').textContent = quotes[i].text;
+  document.getElementById('quote-author').textContent = quotes[i].author;
+  document.querySelectorAll('.testi-dot').forEach((d,j)=>d.classList.toggle('active',i===j));
+  testiIdx = i;
+}
+
+function renderContratos() {
+  const ct = C.contratos;
+  document.getElementById('contratosLabel').textContent = ct.label;
+  document.getElementById('contratosTitle').innerHTML = ct.title1 + ' <em>' + ct.titleEm + '</em>';
+  document.getElementById('contratosDesc').textContent = ct.desc;
+  document.getElementById('contratosGrid').innerHTML = ct.items.map(it =>
+    `<div class="contrato-card">
+      <div class="cf-bl"></div><div class="cf-br"></div>
+      <div class="contrato-header">
+        <span class="contrato-tipo">${it.tipo}</span>
+        <div class="contrato-precio">${it.precio}</div>
+      </div>
+      <img src="${it.img}" class="contrato-img" alt="${it.tipo}">
+      <p class="contrato-desc">${it.desc}</p>
+    </div>`
+  ).join('');
+  document.getElementById('conditionsStrip').innerHTML = ct.conditions.map(c =>
+    `<div class="cond-item"><span>${c.icon}</span><p>${c.text}</p></div>`
+  ).join('');
+  const cta = document.getElementById('contratosCta');
+  cta.textContent = ct.ctaText;
+  cta.href = ct.ctaHref;
+}
+
+function renderContacto() {
+  const cn = C.contacto;
+  document.getElementById('contactoLabel').textContent = cn.label;
+  document.getElementById('contactoTitle').innerHTML = cn.title1 + ' <em>' + cn.titleEm + '</em>';
+  document.getElementById('contactoDesc').textContent = cn.desc;
+  const waBtn = document.getElementById('contactoWaBtn');
+  waBtn.textContent = '💬 WhatsApp: ' + cn.whatsappPrincipalDisplay;
+  waBtn.href = 'https://wa.me/' + cn.whatsappPrincipal;
+
+  const waLinks = cn.whatsappNumbers.map(n =>
+    `<p><a href="https://wa.me/${n.number}">${n.display}</a></p>`
+  ).join('');
+
+  document.getElementById('contactGrid').innerHTML =
+    `<div class="contact-card">
+      <span class="cc-icon">📱</span>
+      <div class="cc-text"><h4>WhatsApp</h4>${waLinks}</div>
+    </div>
+    <div class="contact-card">
+      <span class="cc-icon">📍</span>
+      <div class="cc-text"><h4>Ubicación</h4><p>${cn.ubicacion.line1}</p><p>${cn.ubicacion.line2}</p></div>
+    </div>
+    <div class="contact-card">
+      <span class="cc-icon">🕐</span>
+      <div class="cc-text"><h4>Horario</h4><p>${cn.horario.line1}</p><p>${cn.horario.line2}</p></div>
+    </div>
+    <div class="contact-card">
+      <span class="cc-icon">📸</span>
+      <div class="cc-text"><h4>Redes Sociales</h4><p>Síguenos en Instagram</p><p><a href="${cn.instagramHref}">${cn.instagram}</a></p></div>
+    </div>`;
+}
+
+function renderFooter() {
+  const f = C.footer;
+  document.getElementById('footerLogo').textContent = f.logoText;
+  document.getElementById('footerLinks').innerHTML = f.links.map(l =>
+    `<li><a href="${l.href}">${l.text}</a></li>`
+  ).join('');
+  document.getElementById('footerCopy').textContent = f.copy;
+}
+
+// ════════════════════════════════════════════════════════
+// GALLERY
+// ════════════════════════════════════════════════════════
+let galleryView = 'categories';
+let activeCategory = '';
+
+function renderCategories() {
+  galleryView = 'categories';
+  activeCategory = '';
+  const grid = document.getElementById('galleryGrid');
+  grid.className = 'cat-grid';
+  grid.innerHTML = '';
+  C.galeria.categoryOrder.forEach(cat => {
+    const count = C.galeria.images.filter(img => img.cat === cat).length;
+    const cover = C.galeria.catCovers[cat] || '';
+    const meta  = C.galeria.categories[cat];
+    const card  = document.createElement('div');
+    card.className = 'cat-card';
+    card.onclick = () => openCategory(cat);
+    card.innerHTML = `
+      <div class="cat-card-img" style="background-image:url(${cover})"></div>
+      <div class="cat-card-overlay"></div>
+      <div class="cat-card-body">
+        <span class="cat-icon">${meta.icon}</span>
+        <h3 class="cat-title">${meta.label}</h3>
+        <p class="cat-desc">${meta.desc}</p>
+        <span class="cat-count">${count} fotos</span>
+      </div>`;
+    grid.appendChild(card);
+  });
+  document.getElementById('galleryBack').style.display = 'none';
+  document.getElementById('galleryCatTitle').textContent = '';
+}
+
+function openCategory(cat) {
+  galleryView = 'grid';
+  activeCategory = cat;
+  const meta = C.galeria.categories[cat];
+  document.getElementById('galleryCatTitle').textContent = meta.icon + ' ' + meta.label;
+  document.getElementById('galleryBack').style.display = 'flex';
+  const grid = document.getElementById('galleryGrid');
+  grid.className = 'gallery-grid';
+  const filtered = C.galeria.images
+    .map((img, i) => ({...img, origIdx: i}))
+    .filter(img => img.cat === cat);
+  grid.innerHTML = filtered.map((img, fi) => {
+    const wide = (fi===0||fi===4||fi===8) ? ' gi-wide' : '';
+    return `<div class="gallery-item${wide}" onclick="openGalleryLb(${img.origIdx})">
+      <img class="gallery-img" src="${img.src}" alt="${img.caption}" loading="lazy">
+      <div class="gallery-overlay"><p class="gallery-caption">${img.caption}</p></div>
+    </div>`;
+  }).join('');
+}
+
+let curG = 0;
+function openGalleryLb(i) {
+  curG = i;
+  document.getElementById('galleryLbImg').src = C.galeria.images[i].src;
+  document.getElementById('galleryLbCaption').textContent = C.galeria.images[i].caption;
+  document.getElementById('galleryLightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeGalleryLb() {
+  document.getElementById('galleryLightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function galleryNav(d) {
+  const pool = activeCategory
+    ? C.galeria.images.map((img,i)=>i).filter(i=>C.galeria.images[i].cat===activeCategory)
+    : C.galeria.images.map((_,i)=>i);
+  const pos = pool.indexOf(curG);
+  curG = pool[(pos+d+pool.length)%pool.length];
+  document.getElementById('galleryLbImg').src = C.galeria.images[curG].src;
+  document.getElementById('galleryLbCaption').textContent = C.galeria.images[curG].caption;
+}
+
+// ════════════════════════════════════════════════════════
+// VIDEO LIGHTBOX
+// ════════════════════════════════════════════════════════
+function openVideo(url) {
+  document.getElementById('lightbox-iframe').src = url;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightbox-iframe').src = '';
+  document.body.style.overflow = '';
+}
+function closeVideo(e) { if(e.target===document.getElementById('lightbox')) closeLightbox(); }
+
+// ════════════════════════════════════════════════════════
+// SCROLL REVEAL & COUNTERS
+// ════════════════════════════════════════════════════════
+function initScrollReveal() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach((e,idx) => {
+      if (e.isIntersecting) {
+        setTimeout(()=>e.target.classList.add('visible'), idx*80);
+        obs.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.1});
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+}
+
+function initCounters() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const target = +e.target.dataset.target;
+        const suffix = e.target.dataset.suffix || '+';
+        let count = 0;
+        const step = target/60;
+        const timer = setInterval(()=>{
+          count = Math.min(count+step, target);
+          e.target.textContent = Math.round(count) + suffix;
+          if(count>=target) clearInterval(timer);
+        }, 25);
+        obs.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.5});
+  document.querySelectorAll('[data-target]').forEach(c=>obs.observe(c));
+}
+
+// ════════════════════════════════════════════════════════
+// HERO SLIDER
+// ════════════════════════════════════════════════════════
+let curSlide = 0;
+let heroTimer = null;
+function startHeroSlider() {
+  if(heroTimer) clearInterval(heroTimer);
+  heroTimer = setInterval(()=>{
+    const slides = document.querySelectorAll('.hero-slide');
+    if(slides.length < 2) return;
+    slides[curSlide].classList.remove('active');
+    curSlide = (curSlide+1) % slides.length;
+    slides[curSlide].classList.add('active');
+  }, 5000);
+}
+startHeroSlider();
+
+// Testimonials auto-rotate
+setInterval(()=>{
+  testiIdx = (testiIdx+1) % C.testimonios.quotes.length;
+  changeQuote(testiIdx);
+}, 5000);
+
+// ════════════════════════════════════════════════════════
+// KEYBOARD
+// ════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') { closeLightbox(); closeGalleryLb(); }
+  if (document.getElementById('galleryLightbox').classList.contains('open')) {
+    if (e.key==='ArrowLeft')  galleryNav(-1);
+    if (e.key==='ArrowRight') galleryNav(1);
+  }
+});
+
+// ════════════════════════════════════════════════════════
+// ADMIN PANEL — FULL EDITOR
+// ════════════════════════════════════════════════════════
+
+// Open admin via URL hash #admin
+function checkHashAdmin() {
+  if (window.location.hash === '#admin') {
+    buildAdminPanel();
+    document.getElementById('adminPanel').classList.add('open');
+  }
+}
+window.addEventListener('hashchange', () => {
+  if (window.location.hash === '#admin') {
+    buildAdminPanel();
+    document.getElementById('adminPanel').classList.add('open');
+  } else {
+    document.getElementById('adminPanel').classList.remove('open');
+  }
+});
+setTimeout(checkHashAdmin, 100);
+
+function toggleAdmin() {
+  const p = document.getElementById('adminPanel');
+  if (p.classList.contains('open')) {
+    p.classList.remove('open');
+    history.pushState(null, null, window.location.pathname);
+  } else {
+    buildAdminPanel();
+    p.classList.add('open');
+  }
+}
+
+function showTab(id) {
+  document.querySelectorAll('.adm-tab-content').forEach(t => t.style.display='none');
+  document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).style.display='block';
+  const tabs = {'tab-imgs':0,'tab-hero':1,'tab-stats':2,'tab-servicios':3,'tab-galeria':4,'tab-videos':5,'tab-paquetes':6,'tab-proceso':7,'tab-testi':8,'tab-contratos':9,'tab-contacto':10};
+  document.querySelectorAll('.adm-tab')[tabs[id]]?.classList.add('active');
+}
+
+// Image slot definitions
+function imgSlotDef(lsKey, label, src) { return { lsKey, label, src }; }
+
+function buildAdminPanel() {
+  const C2 = loadContent();
+
+  // ── IMÁGENES ──
+  const mainDefs = [
+    imgSlotDef('img_00', 'Logo', C2.logo),
+    imgSlotDef('img_01', 'Contrato Premium', C2.contratos.items[0]?.img || ''),
+    imgSlotDef('img_02', 'Contrato Básico',  C2.contratos.items[1]?.img || ''),
+  ];
+  document.getElementById('admMainImgs').innerHTML = mainDefs.map(buildSlotHTML).join('');
+
+  const heroDefs = C2.hero.slides.map((s,i) => imgSlotDef('hero_slide_'+i, 'Slide '+(i+1), s));
+  document.getElementById('admHeroImgs').innerHTML = heroDefs.map(buildSlotHTML).join('') +
+    (heroDefs.length ? '' : '<p style="color:rgba(245,238,216,0.3);font-family:\'EB Garamond\',serif;font-style:italic;font-size:0.9rem;">No hay slides aún. Agrega uno.</p>');
+
+  const cats = ['decoracion','boda','quinces','otras'];
+  const catDefs = cats.map((cat,i) => imgSlotDef('catcover_'+cat, cat+' cover', C2.galeria.catCovers[cat] || ''));
+  document.getElementById('admCatImgs').innerHTML = catDefs.map(buildSlotHTML).join('');
+
+  buildGalleryImgSlots(C2);
+
+  // ── HERO ──
+  document.getElementById('tf_hero_eyebrow').value    = C2.hero.eyebrow;
+  document.getElementById('tf_hero_titleLine1').value = C2.hero.titleLine1;
+  document.getElementById('tf_hero_titleEm').value    = C2.hero.titleEm;
+  document.getElementById('tf_hero_subtitle').value   = C2.hero.subtitle;
+  document.getElementById('tf_hero_ctaPrimText').value= C2.hero.ctaPrimaryText;
+  document.getElementById('tf_hero_ctaPrimHref').value= C2.hero.ctaPrimaryHref;
+  document.getElementById('tf_hero_ctaSecText').value = C2.hero.ctaSecondaryText;
+  document.getElementById('tf_hero_ctaSecHref').value = C2.hero.ctaSecondaryHref;
+
+  // ── STATS ──
+  document.getElementById('admStatsFields').innerHTML = C2.stats.map((s,i) =>
+    `<div style="margin-bottom:1rem;border-bottom:1px solid rgba(139,105,20,0.15);padding-bottom:1rem;">
+      <p class="adm-section-title" style="font-size:0.6rem;">Estadística ${i+1}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;">
+        <div class="adm-field-row"><label>Número</label><input id="tf_stat_target_${i}" type="number" value="${s.target}"></div>
+        <div class="adm-field-row"><label>Sufijo</label><input id="tf_stat_suffix_${i}" type="text" value="${s.suffix}"></div>
+        <div class="adm-field-row"><label>Etiqueta</label><input id="tf_stat_label_${i}" type="text" value="${s.label}"></div>
+      </div>
+    </div>`
+  ).join('');
+
+  // ── SERVICIOS ──
+  document.getElementById('tf_sv_label').value   = C2.servicios.label;
+  document.getElementById('tf_sv_title1').value  = C2.servicios.title1;
+  document.getElementById('tf_sv_titleEm').value = C2.servicios.titleEm;
+  document.getElementById('tf_sv_desc').value    = C2.servicios.desc;
+  document.getElementById('admServiciosFields').innerHTML = C2.servicios.items.map((s,i) =>
+    `<div style="margin-bottom:1.5rem;border-bottom:1px solid rgba(139,105,20,0.15);padding-bottom:1rem;">
+      <p class="adm-section-title" style="font-size:0.6rem;">Servicio ${i+1}</p>
+      <div class="adm-field-row"><label>Icono (emoji)</label><input id="tf_svc_icon_${i}" type="text" value="${s.icon}"></div>
+      <div class="adm-field-row"><label>Título</label><input id="tf_svc_title_${i}" type="text" value="${s.title}"></div>
+      <div class="adm-field-row"><label>Descripción</label><textarea id="tf_svc_desc_${i}">${s.desc}</textarea></div>
+      <div class="adm-field-row"><label>Tags (separados por coma)</label><input id="tf_svc_tags_${i}" type="text" value="${s.tags.join(', ')}"></div>
+    </div>`
+  ).join('');
+
+  // ── GALERÍA ──
+  document.getElementById('tf_gal_label').value   = C2.galeria.label;
+  document.getElementById('tf_gal_title1').value  = C2.galeria.title1;
+  document.getElementById('tf_gal_titleEm').value = C2.galeria.titleEm;
+  document.getElementById('tf_gal_desc').value    = C2.galeria.desc;
+  buildGalMeta(C2);
+
+  // ── VIDEOS ──
+  document.getElementById('tf_vid_label').value   = C2.videos.label;
+  document.getElementById('tf_vid_title1').value  = C2.videos.title1;
+  document.getElementById('tf_vid_titleEm').value = C2.videos.titleEm;
+  document.getElementById('tf_vid_desc').value    = C2.videos.desc;
+  buildVideoFields(C2);
+
+  // ── PAQUETES ──
+  document.getElementById('tf_pkg_label').value   = C2.paquetes.label;
+  document.getElementById('tf_pkg_title1').value  = C2.paquetes.title1;
+  document.getElementById('tf_pkg_titleEm').value = C2.paquetes.titleEm;
+  document.getElementById('tf_pkg_desc').value    = C2.paquetes.desc;
+  document.getElementById('admPaquetesFields').innerHTML = C2.paquetes.items.map((p,i) =>
+    `<div style="margin-bottom:1.5rem;border-bottom:1px solid rgba(139,105,20,0.15);padding-bottom:1rem;">
+      <p class="adm-section-title" style="font-size:0.6rem;">Paquete ${i+1}</p>
+      <div class="adm-field-row"><label>Nombre</label><input id="tf_pkg_name_${i}" type="text" value="${p.name}"></div>
+      <div class="adm-field-row"><label>Precio</label><input id="tf_pkg_price_${i}" type="text" value="${p.price}"></div>
+      <div class="adm-field-row"><label>Badge (dejar vacío si no)</label><input id="tf_pkg_badge_${i}" type="text" value="${p.badge}"></div>
+      <div class="adm-field-row"><label>Descripción</label><textarea id="tf_pkg_pdesc_${i}">${p.desc}</textarea></div>
+      <div class="adm-field-row"><label>Incluye (una por línea)</label><textarea id="tf_pkg_feats_${i}" style="min-height:120px;">${p.features.join('\n')}</textarea></div>
+      <div class="adm-field-row"><label>Texto del botón</label><input id="tf_pkg_ctatxt_${i}" type="text" value="${p.ctaText}"></div>
+      <div class="adm-field-row"><label>Enlace del botón</label><input id="tf_pkg_ctahref_${i}" type="text" value="${p.ctaHref}"></div>
+    </div>`
+  ).join('');
+
+  // ── PROCESO ──
+  document.getElementById('tf_proc_label').value   = C2.proceso.label;
+  document.getElementById('tf_proc_title1').value  = C2.proceso.title1;
+  document.getElementById('tf_proc_titleEm').value = C2.proceso.titleEm;
+  document.getElementById('tf_proc_desc').value    = C2.proceso.desc;
+  document.getElementById('admProcesoFields').innerHTML = C2.proceso.steps.map((s,i) =>
+    `<div style="margin-bottom:1rem;border-bottom:1px solid rgba(139,105,20,0.15);padding-bottom:0.8rem;">
+      <div style="display:grid;grid-template-columns:80px 1fr 2fr;gap:0.5rem;">
+        <div class="adm-field-row"><label>Icono</label><input id="tf_proc_icon_${i}" type="text" value="${s.icon}"></div>
+        <div class="adm-field-row"><label>Título</label><input id="tf_proc_title_${i}" type="text" value="${s.title}"></div>
+        <div class="adm-field-row"><label>Descripción</label><input id="tf_proc_desc_${i}" type="text" value="${s.desc}"></div>
+      </div>
+    </div>`
+  ).join('');
+
+  // ── TESTIMONIOS ──
+  document.getElementById('tf_testi_label').value   = C2.testimonios.label;
+  document.getElementById('tf_testi_title1').value  = C2.testimonios.title1;
+  document.getElementById('tf_testi_titleEm').value = C2.testimonios.titleEm;
+  buildTestiFields(C2);
+
+  // ── CONTRATOS ──
+  document.getElementById('tf_ct_label').value   = C2.contratos.label;
+  document.getElementById('tf_ct_title1').value  = C2.contratos.title1;
+  document.getElementById('tf_ct_titleEm').value = C2.contratos.titleEm;
+  document.getElementById('tf_ct_desc').value    = C2.contratos.desc;
+  document.getElementById('tf_ct_ctaText').value = C2.contratos.ctaText;
+  document.getElementById('tf_ct_ctaHref').value = C2.contratos.ctaHref;
+  document.getElementById('admContratosFields').innerHTML = C2.contratos.items.map((ct,i) =>
+    `<div style="margin-bottom:1.5rem;border-bottom:1px solid rgba(139,105,20,0.15);padding-bottom:1rem;">
+      <p class="adm-section-title" style="font-size:0.6rem;">Contrato ${i+1}</p>
+      <div class="adm-field-row"><label>Tipo / Título</label><input id="tf_ct_tipo_${i}" type="text" value="${ct.tipo}"></div>
+      <div class="adm-field-row"><label>Precio</label><input id="tf_ct_precio_${i}" type="text" value="${ct.precio}"></div>
+      <div class="adm-field-row"><label>Descripción</label><textarea id="tf_ct_cdesc_${i}">${ct.desc}</textarea></div>
+    </div>`
+  ).join('');
+
+  // ── CONTACTO ──
+  document.getElementById('tf_cn_label').value   = C2.contacto.label;
+  document.getElementById('tf_cn_title1').value  = C2.contacto.title1;
+  document.getElementById('tf_cn_titleEm').value = C2.contacto.titleEm;
+  document.getElementById('tf_cn_desc').value    = C2.contacto.desc;
+  document.getElementById('tf_wa_principal').value = C2.contacto.whatsappPrincipal;
+  document.getElementById('tf_wa_display').value   = C2.contacto.whatsappPrincipalDisplay;
+  document.getElementById('tf_instagram').value    = C2.contacto.instagram;
+  document.getElementById('tf_instagramHref').value= C2.contacto.instagramHref;
+  document.getElementById('tf_cn_ubic1').value = C2.contacto.ubicacion.line1;
+  document.getElementById('tf_cn_ubic2').value = C2.contacto.ubicacion.line2;
+  document.getElementById('tf_cn_hora1').value = C2.contacto.horario.line1;
+  document.getElementById('tf_cn_hora2').value = C2.contacto.horario.line2;
+  buildWaNumbers(C2);
+  document.getElementById('tf_footer_copy').value = C2.footer.copy;
+
+  // Attach upload listeners
+  attachUploadListeners();
+}
+
+function buildGalleryImgSlots(C2) {
+  document.getElementById('admGalleryImgs').innerHTML = C2.galeria.images.map((img,i) =>
+    buildSlotHTML(imgSlotDef('gallery_img_'+i, 'Foto '+(i+1)+' ('+img.cat+')', img.src))
+  ).join('');
+  attachUploadListeners();
+}
+
+function buildGalMeta(C2) {
+  const cats = C2.galeria.categoryOrder;
+  document.getElementById('admGalMeta').innerHTML = C2.galeria.images.map((img,i) =>
+    `<div style="display:grid;grid-template-columns:2fr 1fr;gap:0.5rem;margin-bottom:0.6rem;align-items:end;">
+      <div class="adm-field-row" style="margin:0;"><label>Foto ${i+1} — Caption</label><input id="tf_gal_cap_${i}" type="text" value="${img.caption}"></div>
+      <div class="adm-field-row" style="margin:0;"><label>Categoría</label>
+        <select id="tf_gal_cat_${i}" style="background:rgba(139,105,20,0.07);border:1px solid rgba(139,105,20,0.25);border-radius:2px;padding:0.6rem 0.5rem;color:var(--parch);font-family:'EB Garamond',serif;font-size:1rem;width:100%;">
+          ${cats.map(c=>`<option value="${c}"${img.cat===c?' selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function buildVideoFields(C2) {
+  document.getElementById('admVideoFields').innerHTML = C2.videos.items.map((v,i) =>
+    `<div style="margin-bottom:1.2rem;border-bottom:1px solid rgba(139,105,20,0.15);padding-bottom:1rem;">
+      <p class="adm-section-title" style="font-size:0.6rem;">Video ${i+1}</p>
+      <div class="adm-field-row"><label>Título</label><input id="tf_vid_title_${i}" type="text" value="${v.title}"></div>
+      <div class="adm-field-row"><label>Categoría</label><input id="tf_vid_cat_${i}" type="text" value="${v.category}"></div>
+      <div class="adm-field-row"><label>Embed URL (YouTube)</label><input id="tf_vid_url_${i}" type="text" value="${v.embedUrl}"></div>
+      <div class="adm-field-row"><label>Thumb URL (dejar vacío para auto)</label><input id="tf_vid_thumb_${i}" type="text" value="${v.thumb}"></div>
+      <button class="adm-btn adm-btn-reset" style="font-size:0.5rem;padding:0.3rem 0.8rem;" onclick="removeVideo(${i})">✕ Eliminar video ${i+1}</button>
+    </div>`
+  ).join('');
+}
+
+function buildTestiFields(C2) {
+  document.getElementById('admTestiFields').innerHTML = C2.testimonios.quotes.map((q,i) =>
+    `<div style="margin-bottom:1rem;border-bottom:1px solid rgba(139,105,20,0.15);padding-bottom:1rem;">
+      <div class="adm-field-row"><label>Testimonio ${i+1}</label><textarea id="tf_testi_text_${i}">${q.text}</textarea></div>
+      <div class="adm-field-row"><label>Autor</label><input id="tf_testi_author_${i}" type="text" value="${q.author}"></div>
+      <button class="adm-btn adm-btn-reset" style="font-size:0.5rem;padding:0.3rem 0.8rem;" onclick="removeTesti(${i})">✕ Eliminar</button>
+    </div>`
+  ).join('');
+}
+
+function buildWaNumbers(C2) {
+  document.getElementById('admWaNumbers').innerHTML = C2.contacto.whatsappNumbers.map((n,i) =>
+    `<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:0.5rem;margin-bottom:0.6rem;align-items:end;">
+      <div class="adm-field-row" style="margin:0;"><label>Número ${i+1} (completo)</label><input id="tf_wan_num_${i}" type="text" value="${n.number}"></div>
+      <div class="adm-field-row" style="margin:0;"><label>Display</label><input id="tf_wan_dis_${i}" type="text" value="${n.display}"></div>
+      <button class="adm-btn adm-btn-reset" style="font-size:0.55rem;padding:0.5rem;margin-bottom:1rem;" onclick="removeWaNumber(${i})">✕</button>
+    </div>`
+  ).join('');
+}
+
+function addHeroSlide() {
+  saveAdminSilent();
+  const C2 = loadContent();
+  C2.hero.slides.push('');
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.hero) saved.hero={};
+  saved.hero.slides = C2.hero.slides;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-imgs');
+}
+
+function addGalleryImage() {
+  saveAdminSilent();
+  const C2 = loadContent();
+  C2.galeria.images.push({ src:'', cat:'otras', caption:'Nueva imagen' });
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.galeria) saved.galeria={};
+  saved.galeria.images = C2.galeria.images;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-imgs');
+  renderAll();
+}
+
+function addVideo() {
+  saveAdminSilent();
+  const C2 = loadContent();
+  C2.videos.items.push({ embedUrl:'', thumb:'', category:'', title:'Nuevo Video' });
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.videos) saved.videos={};
+  saved.videos.items = C2.videos.items;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-videos'); renderAll();
+}
+
+function removeVideo(idx) {
+  saveAdminSilent();
+  const C2 = loadContent();
+  C2.videos.items.splice(idx,1);
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.videos) saved.videos={};
+  saved.videos.items = C2.videos.items;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-videos'); renderAll();
+}
+
+function addTestimonio() {
+  saveAdminSilent();
+  const C2 = loadContent();
+  C2.testimonios.quotes.push({ text:'Nuevo testimonio...', author:'— Nombre · Evento Año' });
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.testimonios) saved.testimonios={};
+  saved.testimonios.quotes = C2.testimonios.quotes;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-testi'); renderAll();
+}
+
+function removeTesti(idx) {
+  saveAdminSilent();
+  const C2 = loadContent();
+  C2.testimonios.quotes.splice(idx,1);
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.testimonios) saved.testimonios={};
+  saved.testimonios.quotes = C2.testimonios.quotes;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-testi'); renderAll();
+}
+
+function addWaNumber() {
+  saveAdminSilent();
+  const C2 = loadContent();
+  C2.contacto.whatsappNumbers.push({ number:'57', display:'' });
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.contacto) saved.contacto={};
+  saved.contacto.whatsappNumbers = C2.contacto.whatsappNumbers;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-contacto');
+}
+
+function removeWaNumber(idx) {
+  saveAdminSilent();
+  const C2 = loadContent();
+  C2.contacto.whatsappNumbers.splice(idx,1);
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
+  if(!saved.contacto) saved.contacto={};
+  saved.contacto.whatsappNumbers = C2.contacto.whatsappNumbers;
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  buildAdminPanel(); showTab('tab-contacto');
+}
+
+function buildSlotHTML(d) {
+  const preview = d.src && !d.src.startsWith('./') ? d.src : '';
+  return `<div class="adm-img-slot" data-key="${d.lsKey}">
+    <label>${d.label}</label>
+    <img src="${preview || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" onerror="this.style.opacity=0.1" style="${preview?'':'opacity:0.1'}">
+    <input type="file" accept="image/*">
+    <button class="adm-upload-btn">📤 Subir imagen</button>
+    <span class="adm-uploading" style="display:none;">Subiendo…</span>
+    ${preview?`<span style="font-size:0.6rem;color:rgba(245,238,216,0.3);word-break:break-all;text-align:center;">✓ Guardada</span>`:''}
+  </div>`;
+}
+
+function attachUploadListeners() {
+  document.querySelectorAll('.adm-img-slot').forEach(slot => {
+    const key = slot.dataset.key;
+    const btn = slot.querySelector('.adm-upload-btn');
+    const inp = slot.querySelector('input[type=file]');
+    // Clone to remove old listeners
+    const newBtn = btn.cloneNode(true); btn.replaceWith(newBtn);
+    const newInp = inp.cloneNode(true); inp.replaceWith(newInp);
+    newBtn.addEventListener('click', () => newInp.click());
+    newInp.addEventListener('change', () => handleUpload(newInp, key, slot));
+  });
+}
+
+function saveAdminSilent() {
+  // Save without toast — used before rebuilding panel
+  try { _doSave(); } catch(e){}
+}
+
+function saveAdmin() {
+  _doSave();
+  renderAll();
+  showToast('✦ Cambios guardados correctamente');
+}
+
+function _doSave() {
+  const C2 = loadContent();
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
+
+  // ── HERO ──
+  if(!saved.hero) saved.hero={};
+  saved.hero.eyebrow       = v('tf_hero_eyebrow');
+  saved.hero.titleLine1    = v('tf_hero_titleLine1');
+  saved.hero.titleEm       = v('tf_hero_titleEm');
+  saved.hero.subtitle      = v('tf_hero_subtitle');
+  saved.hero.ctaPrimaryText  = v('tf_hero_ctaPrimText');
+  saved.hero.ctaPrimaryHref  = v('tf_hero_ctaPrimHref');
+  saved.hero.ctaSecondaryText= v('tf_hero_ctaSecText');
+  saved.hero.ctaSecondaryHref= v('tf_hero_ctaSecHref');
+
+  // ── STATS ──
+  const stats = [];
+  C2.stats.forEach((_,i) => {
+    const tEl = document.getElementById('tf_stat_target_'+i);
+    const sEl = document.getElementById('tf_stat_suffix_'+i);
+    const lEl = document.getElementById('tf_stat_label_'+i);
+    if(tEl) stats.push({ target: +tEl.value, suffix: sEl.value, label: lEl.value });
+  });
+  if(stats.length) saved.stats = stats;
+
+  // ── SERVICIOS ──
+  if(!saved.servicios) saved.servicios={};
+  saved.servicios.label   = v('tf_sv_label');
+  saved.servicios.title1  = v('tf_sv_title1');
+  saved.servicios.titleEm = v('tf_sv_titleEm');
+  saved.servicios.desc    = v('tf_sv_desc');
+  const svcs = [];
+  C2.servicios.items.forEach((_,i) => {
+    const iconEl = document.getElementById('tf_svc_icon_'+i);
+    if(iconEl) svcs.push({
+      icon:  iconEl.value,
+      title: v('tf_svc_title_'+i),
+      desc:  v('tf_svc_desc_'+i),
+      tags:  v('tf_svc_tags_'+i).split(',').map(t=>t.trim()).filter(Boolean)
+    });
+  });
+  if(svcs.length) saved.servicios.items = svcs;
+
+  // ── GALERÍA ──
+  if(!saved.galeria) saved.galeria={};
+  saved.galeria.label   = v('tf_gal_label');
+  saved.galeria.title1  = v('tf_gal_title1');
+  saved.galeria.titleEm = v('tf_gal_titleEm');
+  saved.galeria.desc    = v('tf_gal_desc');
+  // gallery meta
+  const galImgs = JSON.parse(JSON.stringify(C2.galeria.images));
+  galImgs.forEach((_,i) => {
+    const capEl = document.getElementById('tf_gal_cap_'+i);
+    const catEl = document.getElementById('tf_gal_cat_'+i);
+    if(capEl && galImgs[i]) {
+      galImgs[i].caption = capEl.value;
+      galImgs[i].cat = catEl.value;
+    }
+  });
+  saved.galeria.images = galImgs;
+
+  // ── VIDEOS ──
+  if(!saved.videos) saved.videos={};
+  saved.videos.label   = v('tf_vid_label');
+  saved.videos.title1  = v('tf_vid_title1');
+  saved.videos.titleEm = v('tf_vid_titleEm');
+  saved.videos.desc    = v('tf_vid_desc');
+  const vids = [];
+  C2.videos.items.forEach((_,i) => {
+    const el = document.getElementById('tf_vid_title_'+i);
+    if(el) vids.push({
+      title:    el.value,
+      category: v('tf_vid_cat_'+i),
+      embedUrl: v('tf_vid_url_'+i),
+      thumb:    v('tf_vid_thumb_'+i)
+    });
+  });
+  if(vids.length) saved.videos.items = vids;
+
+  // ── PAQUETES ──
+  if(!saved.paquetes) saved.paquetes={};
+  saved.paquetes.label   = v('tf_pkg_label');
+  saved.paquetes.title1  = v('tf_pkg_title1');
+  saved.paquetes.titleEm = v('tf_pkg_titleEm');
+  saved.paquetes.desc    = v('tf_pkg_desc');
+  const pkgs = [];
+  C2.paquetes.items.forEach((orig,i) => {
+    const el = document.getElementById('tf_pkg_name_'+i);
+    if(el) pkgs.push({
+      name:     el.value,
+      price:    v('tf_pkg_price_'+i),
+      badge:    v('tf_pkg_badge_'+i),
+      featured: orig.featured,
+      desc:     v('tf_pkg_pdesc_'+i),
+      features: v('tf_pkg_feats_'+i).split('\n').map(f=>f.trim()).filter(Boolean),
+      ctaText:  v('tf_pkg_ctatxt_'+i),
+      ctaHref:  v('tf_pkg_ctahref_'+i)
+    });
+  });
+  if(pkgs.length) saved.paquetes.items = pkgs;
+
+  // ── PROCESO ──
+  if(!saved.proceso) saved.proceso={};
+  saved.proceso.label   = v('tf_proc_label');
+  saved.proceso.title1  = v('tf_proc_title1');
+  saved.proceso.titleEm = v('tf_proc_titleEm');
+  saved.proceso.desc    = v('tf_proc_desc');
+  const steps = [];
+  C2.proceso.steps.forEach((_,i) => {
+    const el = document.getElementById('tf_proc_icon_'+i);
+    if(el) steps.push({
+      icon:  el.value,
+      title: v('tf_proc_title_'+i),
+      desc:  v('tf_proc_desc_'+i)
+    });
+  });
+  if(steps.length) saved.proceso.steps = steps;
+
+  // ── TESTIMONIOS ──
+  if(!saved.testimonios) saved.testimonios={};
+  saved.testimonios.label   = v('tf_testi_label');
+  saved.testimonios.title1  = v('tf_testi_title1');
+  saved.testimonios.titleEm = v('tf_testi_titleEm');
+  const quotes = [];
+  C2.testimonios.quotes.forEach((_,i) => {
+    const el = document.getElementById('tf_testi_text_'+i);
+    if(el) quotes.push({ text: el.value, author: v('tf_testi_author_'+i) });
+  });
+  if(quotes.length) saved.testimonios.quotes = quotes;
+
+  // ── CONTRATOS ──
+  if(!saved.contratos) saved.contratos={};
+  saved.contratos.label   = v('tf_ct_label');
+  saved.contratos.title1  = v('tf_ct_title1');
+  saved.contratos.titleEm = v('tf_ct_titleEm');
+  saved.contratos.desc    = v('tf_ct_desc');
+  saved.contratos.ctaText = v('tf_ct_ctaText');
+  saved.contratos.ctaHref = v('tf_ct_ctaHref');
+  const ctItems = JSON.parse(JSON.stringify(C2.contratos.items));
+  ctItems.forEach((_,i) => {
+    const el = document.getElementById('tf_ct_tipo_'+i);
+    if(el) {
+      ctItems[i].tipo   = el.value;
+      ctItems[i].precio = v('tf_ct_precio_'+i);
+      ctItems[i].desc   = v('tf_ct_cdesc_'+i);
+    }
+  });
+  saved.contratos.items = ctItems;
+
+  // ── CONTACTO ──
+  if(!saved.contacto) saved.contacto={};
+  saved.contacto.label   = v('tf_cn_label');
+  saved.contacto.title1  = v('tf_cn_title1');
+  saved.contacto.titleEm = v('tf_cn_titleEm');
+  saved.contacto.desc    = v('tf_cn_desc');
+  saved.contacto.whatsappPrincipal        = v('tf_wa_principal');
+  saved.contacto.whatsappPrincipalDisplay = v('tf_wa_display');
+  saved.contacto.instagram    = v('tf_instagram');
+  saved.contacto.instagramHref= v('tf_instagramHref');
+  if(!saved.contacto.ubicacion) saved.contacto.ubicacion={};
+  saved.contacto.ubicacion.line1 = v('tf_cn_ubic1');
+  saved.contacto.ubicacion.line2 = v('tf_cn_ubic2');
+  if(!saved.contacto.horario) saved.contacto.horario={};
+  saved.contacto.horario.line1 = v('tf_cn_hora1');
+  saved.contacto.horario.line2 = v('tf_cn_hora2');
+  const waNums = [];
+  C2.contacto.whatsappNumbers.forEach((_,i) => {
+    const el = document.getElementById('tf_wan_num_'+i);
+    if(el) waNums.push({ number: el.value, display: v('tf_wan_dis_'+i) });
+  });
+  if(waNums.length) saved.contacto.whatsappNumbers = waNums;
+
+  // ── FOOTER ──
+  if(!saved.footer) saved.footer={};
+  saved.footer.copy = v('tf_footer_copy');
+
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+}
+
+function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+
+function resetAdmin() {
+  if (confirm('¿Restaurar todos los valores por defecto? Esto borrará imágenes y textos guardados.')) {
+    localStorage.removeItem('horeb_content');
+    localStorage.removeItem('horeb_imgs');
+    renderAll();
+    document.getElementById('adminPanel').classList.remove('open');
+    showToast('↺ Valores restaurados');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('admToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Image upload handler — supports flexible key system
+async function handleUpload(inp, key, slot) {
+  if (!inp.files[0]) return;
+  const file = inp.files[0];
+  const loading = slot.querySelector('.adm-uploading');
+  const btn = slot.querySelector('.adm-upload-btn');
+  const imgEl = slot.querySelector('img');
+  loading.style.display = 'block';
+  btn.style.display = 'none';
+
+  const useLocal = (IMGBB_KEY === 'YOUR_IMGBB_API_KEY_HERE');
+  let url = '';
+
+  if (useLocal) {
+    url = URL.createObjectURL(file);
+    showToast('⚠️ Imagen local (sesión actual). Configura imgbb para persistir.');
+  } else {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method:'POST', body:formData });
+      const data = await res.json();
+      if (data.success) { url = data.data.url; showToast('✦ Imagen subida correctamente'); }
+      else { showToast('Error al subir imagen'); loading.style.display='none'; btn.style.display='block'; return; }
+    } catch(e) { showToast('Error de conexión'); loading.style.display='none'; btn.style.display='block'; return; }
+  }
+
+  imgEl.src = url;
+  imgEl.style.opacity = 1;
+  saveImageByKey(key, url);
+  loading.style.display = 'none';
+  btn.style.display = 'block';
+}
+
+function saveImageByKey(key, url) {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
+
+  if (key === 'img_00') {
+    saved.logo = url;
+  } else if (key === 'img_01') {
+    if(!saved.contratos) saved.contratos={};
+    if(!saved.contratos.items) saved.contratos.items = JSON.parse(JSON.stringify(DEFAULT_CONTENT.contratos.items));
+    saved.contratos.items[0].img = url;
+  } else if (key === 'img_02') {
+    if(!saved.contratos) saved.contratos={};
+    if(!saved.contratos.items) saved.contratos.items = JSON.parse(JSON.stringify(DEFAULT_CONTENT.contratos.items));
+    saved.contratos.items[1].img = url;
+  } else if (key.startsWith('hero_slide_')) {
+    const idx = parseInt(key.replace('hero_slide_',''));
+    if(!saved.hero) saved.hero={};
+    if(!saved.hero.slides) saved.hero.slides = [...DEFAULT_CONTENT.hero.slides];
+    while(saved.hero.slides.length <= idx) saved.hero.slides.push('');
+    saved.hero.slides[idx] = url;
+  } else if (key.startsWith('catcover_')) {
+    const cat = key.replace('catcover_','');
+    if(!saved.galeria) saved.galeria={};
+    if(!saved.galeria.catCovers) saved.galeria.catCovers = {...DEFAULT_CONTENT.galeria.catCovers};
+    saved.galeria.catCovers[cat] = url;
+  } else if (key.startsWith('gallery_img_')) {
+    const idx = parseInt(key.replace('gallery_img_',''));
+    if(!saved.galeria) saved.galeria={};
+    if(!saved.galeria.images) saved.galeria.images = DEFAULT_CONTENT.galeria.images.map(i=>({...i}));
+    while(saved.galeria.images.length <= idx) saved.galeria.images.push({src:'',cat:'otras',caption:'Nueva imagen'});
+    saved.galeria.images[idx].src = url;
+  }
+
+  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  renderAll();
+}
+
+// ════════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════════
+renderAll();
+</script>
+</body>
+</html>
