@@ -486,6 +486,13 @@ footer{position:relative;z-index:1;display:flex;align-items:center;justify-conte
 </style>
 </head>
 <body>
+<!-- Loader mientras se carga desde Apps Script -->
+<div id="gasLoader" style="display:none;position:fixed;inset:0;z-index:99999;background:#1a1a2e;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;">
+  <div style="font-family:'EB Garamond',serif;color:#c9a84c;font-size:1.8rem;letter-spacing:0.2em;">✦ HOREB ✦</div>
+  <div style="color:rgba(245,238,216,0.6);font-size:0.85rem;letter-spacing:0.15em;">Cargando configuración…</div>
+  <div style="width:48px;height:48px;border:3px solid rgba(201,168,76,0.2);border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</div>
 
 <!-- ══ NAV ══ -->
 <nav id="mainNav">
@@ -942,7 +949,7 @@ footer{position:relative;z-index:1;display:flex;align-items:center;justify-conte
       <button class="adm-btn" onclick="document.getElementById('importConfigFile').click()">⬆ Importar configuración (.json)</button>
       <input type="file" id="importConfigFile" accept="application/json" style="display:none" onchange="importConfig(this)">
     </div>
-    <p class="adm-key-hint" style="margin-top:0.8rem;">⚠️ Importante: tus cambios se guardan solo en <strong>este navegador/dispositivo</strong> (localStorage). Para que se vean igual en celular u otra computadora, exporta el JSON aquí y pégalo dentro del código como nuevo contenido por defecto antes de subirlo a GitHub, o impórtalo en el otro dispositivo.</p>
+    <p class="adm-key-hint" style="margin-top:0.8rem;">☁️ Los cambios se guardan en la <strong>nube (Google Sheets)</strong> y se ven igual en cualquier dispositivo automáticamente.</p>
     <p class="adm-key-hint" style="margin-top:1rem;">Para subir imágenes a producción configura tu API Key de <a href="https://imgbb.com" target="_blank" style="color:var(--gold3);">imgbb.com</a> — edita la variable IMGBB_KEY en el código.</p>
   </div>
 </div>
@@ -1157,18 +1164,36 @@ const DEFAULT_CONTENT = {
 };
 
 // ════════════════════════════════════════════════════════
-// MERGE: DEFAULT + localStorage overrides
+// BACKEND: Google Apps Script
 // ════════════════════════════════════════════════════════
 const IMGBB_KEY = "0878b7187fc20be806bcae91d2268089";
 
-function loadContent() {
-  const C = JSON.parse(JSON.stringify(DEFAULT_CONTENT)); // deep clone
+// ⚠️ Cambia esta URL por la URL de tu despliegue de Apps Script
+const GAS_URL = "https://script.google.com/macros/s/AKfycby4Zh5cXKjniumXY4v3X4_zc7MRxPJOxljMZ_DgXIlC1eGepIzQjL3lfhOuHcP3cVxy/exec";
+
+// Cache en memoria para la sesión actual (evita peticiones repetidas)
+let _contentCache = null;
+
+// Carga el contenido desde Apps Script (con fallback a DEFAULT_CONTENT)
+async function fetchContent() {
   try {
-    const saved = JSON.parse(localStorage.getItem('horeb_content') || '{}');
-    // Deep merge only the keys that exist in saved
-    deepMerge(C, saved);
-  } catch(e){}
-  return C;
+    const res = await fetch(GAS_URL + "?action=getContent");
+    const json = await res.json();
+    if (json.ok && json.data) {
+      const C = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
+      deepMerge(C, json.data);
+      _contentCache = C;
+      return C;
+    }
+  } catch(e) {
+    console.warn("Apps Script no disponible, usando DEFAULT_CONTENT:", e);
+  }
+  return JSON.parse(JSON.stringify(DEFAULT_CONTENT));
+}
+
+// Versión síncrona para el panel admin (usa el cache ya cargado)
+function loadContent() {
+  return _contentCache ? JSON.parse(JSON.stringify(_contentCache)) : JSON.parse(JSON.stringify(DEFAULT_CONTENT));
 }
 
 function deepMerge(target, source) {
@@ -1179,6 +1204,21 @@ function deepMerge(target, source) {
     } else if (source[key] !== undefined && source[key] !== null && source[key] !== '') {
       target[key] = source[key];
     }
+  }
+}
+
+// Envía datos al Apps Script
+async function gasPost(body) {
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    return await res.json();
+  } catch(e) {
+    console.error("Error al guardar en Apps Script:", e);
+    return { ok: false, error: e.message };
   }
 }
 
@@ -1572,10 +1612,7 @@ function startHeroSlider() {
     curSlide = (curSlide+1) % slides.length;
     slides[curSlide].classList.add('active');
   }, speed);
-}
-startHeroSlider();
-
-// Testimonials auto-rotate
+// (startHeroSlider se invoca desde renderAll() una vez que C está definido)
 setInterval(()=>{
   testiIdx = (testiIdx+1) % C.testimonios.quotes.length;
   changeQuote(testiIdx);
@@ -1813,18 +1850,13 @@ function buildGalCats(C2) {
 
 function addGalCategory() {
   saveAdminSilent();
-  const C2 = loadContent();
-  let n = 1, key = 'nueva'+n;
-  while (C2.galeria.categoryOrder.includes(key)) { n++; key = 'nueva'+n; }
-  C2.galeria.categoryOrder.push(key);
-  C2.galeria.categories[key] = { label:'Nueva Categoría', icon:'✨', desc:'Descripción' };
-  C2.galeria.catCovers[key] = '';
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.galeria) saved.galeria={};
-  saved.galeria.categoryOrder = C2.galeria.categoryOrder;
-  saved.galeria.categories = C2.galeria.categories;
-  saved.galeria.catCovers = C2.galeria.catCovers;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('galeria', C => {
+    let n = 1, key = 'nueva'+n;
+    while (C.galeria.categoryOrder.includes(key)) { n++; key = 'nueva'+n; }
+    C.galeria.categoryOrder.push(key);
+    C.galeria.categories[key] = { label:'Nueva Categoría', icon:'✨', desc:'Descripción' };
+    C.galeria.catCovers[key] = '';
+  });
   buildAdminPanel(); showTab('tab-galeria');
   renderAll();
 }
@@ -1835,31 +1867,23 @@ function removeGalCategory(i) {
   if (C2.galeria.categoryOrder.length <= 1) { showToast('Debe quedar al menos una categoría'); return; }
   const cat = C2.galeria.categoryOrder[i];
   if (!confirm('¿Eliminar la categoría "'+(C2.galeria.categories[cat]?.label||cat)+'"? Las fotos que tenía quedarán visibles solo dentro de otra categoría que asignes manualmente.')) return;
-  C2.galeria.categoryOrder.splice(i,1);
-  delete C2.galeria.categories[cat];
-  delete C2.galeria.catCovers[cat];
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.galeria) saved.galeria={};
-  saved.galeria.categoryOrder = C2.galeria.categoryOrder;
-  saved.galeria.categories = C2.galeria.categories;
-  saved.galeria.catCovers = C2.galeria.catCovers;
-  saved.galeria.images = C2.galeria.images;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('galeria', C => {
+    C.galeria.categoryOrder.splice(i,1);
+    delete C.galeria.categories[cat];
+    delete C.galeria.catCovers[cat];
+  });
   buildAdminPanel(); showTab('tab-galeria');
   renderAll();
 }
 
 function moveGalCategory(i, dir) {
   saveAdminSilent();
-  const C2 = loadContent();
-  const order = C2.galeria.categoryOrder;
-  const j = i + dir;
-  if (j < 0 || j >= order.length) return;
-  [order[i], order[j]] = [order[j], order[i]];
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.galeria) saved.galeria={};
-  saved.galeria.categoryOrder = order;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('galeria', C => {
+    const order = C.galeria.categoryOrder;
+    const j = i + dir;
+    if (j < 0 || j >= order.length) return;
+    [order[i], order[j]] = [order[j], order[i]];
+  });
   buildAdminPanel(); showTab('tab-galeria');
   renderAll();
 }
@@ -1911,92 +1935,66 @@ function buildWaNumbers(C2) {
   ).join('');
 }
 
+// Helper: actualiza cache y guarda sección en Apps Script
+function _cacheAndSave(section, updater) {
+  if (!_contentCache) _contentCache = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
+  updater(_contentCache);
+  const sectionData = {
+    hero:        _contentCache.hero,
+    galeria:     _contentCache.galeria.images,
+    videos:      _contentCache.videos.items,
+    testimonios: _contentCache.testimonios.quotes,
+    contacto:    _contentCache.contacto
+  }[section] || _contentCache[section];
+  gasPost({ action: 'saveSection', section, data: sectionData });
+}
+
 function addHeroSlide() {
   saveAdminSilent();
-  const C2 = loadContent();
-  C2.hero.slides.push('');
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.hero) saved.hero={};
-  saved.hero.slides = C2.hero.slides;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('hero', C => C.hero.slides.push(''));
   buildAdminPanel(); showTab('tab-imgs');
 }
 
 function addGalleryImage() {
   saveAdminSilent();
-  const C2 = loadContent();
-  C2.galeria.images.push({ src:'', cat: C2.galeria.categoryOrder[0] || 'otras', caption:'Nueva imagen' });
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.galeria) saved.galeria={};
-  saved.galeria.images = C2.galeria.images;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('galeria', C => C.galeria.images.push({ src:'', cat: C.galeria.categoryOrder[0] || 'otras', caption:'Nueva imagen' }));
   buildAdminPanel(); showTab('tab-imgs');
   renderAll();
 }
 
 function addVideo() {
   saveAdminSilent();
-  const C2 = loadContent();
-  C2.videos.items.push({ embedUrl:'', thumb:'', category:'', title:'Nuevo Video' });
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.videos) saved.videos={};
-  saved.videos.items = C2.videos.items;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('videos', C => C.videos.items.push({ embedUrl:'', thumb:'', category:'', title:'Nuevo Video' }));
   buildAdminPanel(); showTab('tab-videos'); renderAll();
 }
 
 function removeVideo(idx) {
   saveAdminSilent();
-  const C2 = loadContent();
-  C2.videos.items.splice(idx,1);
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.videos) saved.videos={};
-  saved.videos.items = C2.videos.items;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('videos', C => C.videos.items.splice(idx,1));
   buildAdminPanel(); showTab('tab-videos'); renderAll();
 }
 
 function addTestimonio() {
   saveAdminSilent();
-  const C2 = loadContent();
-  C2.testimonios.quotes.push({ text:'Nuevo testimonio...', author:'— Nombre · Evento Año' });
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.testimonios) saved.testimonios={};
-  saved.testimonios.quotes = C2.testimonios.quotes;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('testimonios', C => C.testimonios.quotes.push({ text:'Nuevo testimonio...', author:'— Nombre · Evento Año' }));
   buildAdminPanel(); showTab('tab-testi'); renderAll();
 }
 
 function removeTesti(idx) {
   saveAdminSilent();
-  const C2 = loadContent();
-  C2.testimonios.quotes.splice(idx,1);
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.testimonios) saved.testimonios={};
-  saved.testimonios.quotes = C2.testimonios.quotes;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('testimonios', C => C.testimonios.quotes.splice(idx,1));
   buildAdminPanel(); showTab('tab-testi'); renderAll();
 }
 
 function addWaNumber() {
   saveAdminSilent();
-  const C2 = loadContent();
-  C2.contacto.whatsappNumbers.push({ number:'57', display:'' });
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.contacto) saved.contacto={};
-  saved.contacto.whatsappNumbers = C2.contacto.whatsappNumbers;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('contacto', C => C.contacto.whatsappNumbers.push({ number:'57', display:'' }));
   buildAdminPanel(); showTab('tab-contacto');
 }
 
 function removeWaNumber(idx) {
   saveAdminSilent();
-  const C2 = loadContent();
-  C2.contacto.whatsappNumbers.splice(idx,1);
-  let saved = {}; try { saved = JSON.parse(localStorage.getItem('horeb_content')||'{}'); } catch(e){}
-  if(!saved.contacto) saved.contacto={};
-  saved.contacto.whatsappNumbers = C2.contacto.whatsappNumbers;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  _cacheAndSave('contacto', C => C.contacto.whatsappNumbers.splice(idx,1));
   buildAdminPanel(); showTab('tab-contacto');
 }
 
@@ -2017,17 +2015,16 @@ function buildSlotHTML(d) {
 // IMAGE POSITION / ZOOM EDITOR (per image, by lsKey)
 // ════════════════════════════════════════════════════════
 function getImgPos(key) {
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
-  return (saved.imgPos && saved.imgPos[key]) || { fit:'contain', zoom:100, posX:50, posY:50 };
+  if (!_contentCache) return { fit:'contain', zoom:100, posX:50, posY:50 };
+  return (_contentCache.imgPos && _contentCache.imgPos[key]) || { fit:'contain', zoom:100, posX:50, posY:50 };
 }
 
 function setImgPos(key, pos) {
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
-  if(!saved.imgPos) saved.imgPos = {};
-  saved.imgPos[key] = pos;
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  if (!_contentCache) _contentCache = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
+  if (!_contentCache.imgPos) _contentCache.imgPos = {};
+  _contentCache.imgPos[key] = pos;
+  // Guardar imgPos como sección especial en Apps Script
+  gasPost({ action: 'saveSection', section: 'config', data: { imgPos: JSON.stringify(_contentCache.imgPos) } });
 }
 
 // Apply stored fit/zoom/position to a background-image element (hero slide, cat card cover)
@@ -2162,14 +2159,10 @@ function ipeSave() {
   setImgPos(ipeState.key, { fit:ipeState.fit, zoom:ipeState.zoom, posX:ipeState.posX, posY:ipeState.posY });
   if (ipeState.key.startsWith('gallery_img_')) {
     const idx = +ipeState.key.replace('gallery_img_','');
-    let saved = {};
-    try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
-    const C2 = loadContent();
-    if(!saved.galeria) saved.galeria = {};
-    if(!saved.galeria.images) saved.galeria.images = JSON.parse(JSON.stringify(C2.galeria.images));
-    while(saved.galeria.images.length <= idx) saved.galeria.images.push({...C2.galeria.images[saved.galeria.images.length]});
-    saved.galeria.images[idx].caption = document.getElementById('ipeCaption').value;
-    localStorage.setItem('horeb_content', JSON.stringify(saved));
+    if (!_contentCache) _contentCache = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
+    while(_contentCache.galeria.images.length <= idx) _contentCache.galeria.images.push({src:'',cat:'otras',caption:'Nueva imagen'});
+    _contentCache.galeria.images[idx].caption = document.getElementById('ipeCaption').value;
+    gasPost({ action: 'saveSection', section: 'galeria', data: _contentCache.galeria.images });
   }
   document.getElementById('imgPosEditor').classList.remove('open');
   showToast('✦ Encuadre guardado');
@@ -2195,9 +2188,8 @@ function attachUploadListeners() {
 }
 
 function exportConfig() {
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
-  const blob = new Blob([JSON.stringify(saved, null, 2)], { type:'application/json' });
+  const data = _contentCache || DEFAULT_CONTENT;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -2213,11 +2205,12 @@ function importConfig(input) {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      localStorage.setItem('horeb_content', JSON.stringify(data));
-      showToast('✦ Configuración importada');
+      _contentCache = data;
+      await gasPost({ action: 'saveAll', data });
+      showToast('✦ Configuración importada a la nube');
       buildAdminPanel();
       renderAll();
     } catch(err) {
@@ -2441,18 +2434,31 @@ function _doSave() {
   if(!saved.footer) saved.footer={};
   saved.footer.copy = v('tf_footer_copy');
 
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  // Actualizar cache local y guardar en Apps Script
+  deepMerge(_contentCache, saved);
+  gasPost({ action: 'saveAll', data: saved })
+    .then(r => {
+      if (r.ok) showToast('✦ Guardado en la nube');
+      else showToast('⚠️ Error al guardar: ' + (r.error || ''));
+    })
+    .catch(() => showToast('⚠️ Sin conexión al servidor'));
 }
 
 function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
 
 function resetAdmin() {
-  if (confirm('¿Restaurar todos los valores por defecto? Esto borrará imágenes y textos guardados.')) {
-    localStorage.removeItem('horeb_content');
-    localStorage.removeItem('horeb_imgs');
-    renderAll();
-    document.getElementById('adminPanel').classList.remove('open');
-    showToast('↺ Valores restaurados');
+  if (confirm('¿Restaurar todos los valores por defecto? Esto eliminará los textos e imágenes guardados en la nube.')) {
+    gasPost({ action: 'resetDefaults' }).then(async r => {
+      if (r.ok) {
+        _contentCache = null;
+        await fetchContent();
+        renderAll();
+        document.getElementById('adminPanel').classList.remove('open');
+        showToast('↺ Valores restaurados en la nube');
+      } else {
+        showToast('⚠️ Error al restaurar: ' + (r.error || ''));
+      }
+    });
   }
 }
 
@@ -2498,46 +2504,57 @@ async function handleUpload(inp, key, slot) {
 }
 
 function saveImageByKey(key, url) {
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem('horeb_content') || '{}'); } catch(e){}
+  // Actualizar el cache en memoria
+  if (!_contentCache) _contentCache = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
+  const C = _contentCache;
+  let section = 'config', data = {};
 
   if (key === 'img_00') {
-    saved.logo = url;
+    C.logo = url;
+    section = 'config'; data = { logo: url };
   } else if (key === 'img_01') {
-    if(!saved.contratos) saved.contratos={};
-    if(!saved.contratos.items) saved.contratos.items = JSON.parse(JSON.stringify(DEFAULT_CONTENT.contratos.items));
-    saved.contratos.items[0].img = url;
+    if (!C.contratos.items[0]) C.contratos.items[0] = {};
+    C.contratos.items[0].img = url;
+    section = 'contratos'; data = C.contratos.items;
   } else if (key === 'img_02') {
-    if(!saved.contratos) saved.contratos={};
-    if(!saved.contratos.items) saved.contratos.items = JSON.parse(JSON.stringify(DEFAULT_CONTENT.contratos.items));
-    saved.contratos.items[1].img = url;
+    if (!C.contratos.items[1]) C.contratos.items[1] = {};
+    C.contratos.items[1].img = url;
+    section = 'contratos'; data = C.contratos.items;
   } else if (key.startsWith('hero_slide_')) {
     const idx = parseInt(key.replace('hero_slide_',''));
-    if(!saved.hero) saved.hero={};
-    if(!saved.hero.slides) saved.hero.slides = [...DEFAULT_CONTENT.hero.slides];
-    while(saved.hero.slides.length <= idx) saved.hero.slides.push('');
-    saved.hero.slides[idx] = url;
+    while(C.hero.slides.length <= idx) C.hero.slides.push('');
+    C.hero.slides[idx] = url;
+    section = 'hero'; data = C.hero;
   } else if (key.startsWith('catcover_')) {
     const cat = key.replace('catcover_','');
-    if(!saved.galeria) saved.galeria={};
-    if(!saved.galeria.catCovers) saved.galeria.catCovers = {...DEFAULT_CONTENT.galeria.catCovers};
-    saved.galeria.catCovers[cat] = url;
+    C.galeria.catCovers[cat] = url;
+    section = 'galeria'; data = C.galeria.images;
   } else if (key.startsWith('gallery_img_')) {
     const idx = parseInt(key.replace('gallery_img_',''));
-    if(!saved.galeria) saved.galeria={};
-    if(!saved.galeria.images) saved.galeria.images = DEFAULT_CONTENT.galeria.images.map(i=>({...i}));
-    while(saved.galeria.images.length <= idx) saved.galeria.images.push({src:'',cat:'otras',caption:'Nueva imagen'});
-    saved.galeria.images[idx].src = url;
+    while(C.galeria.images.length <= idx) C.galeria.images.push({src:'',cat:'otras',caption:'Nueva imagen'});
+    C.galeria.images[idx].src = url;
+    section = 'galeria'; data = C.galeria.images;
   }
 
-  localStorage.setItem('horeb_content', JSON.stringify(saved));
+  // Guardar en Apps Script
+  gasPost({ action: 'saveSection', section, data })
+    .then(r => { if (!r.ok) console.warn('Error guardando imagen:', r.error); });
   renderAll();
 }
 
 // ════════════════════════════════════════════════════════
-// BOOT
+// BOOT — carga desde Apps Script y luego renderiza
 // ════════════════════════════════════════════════════════
-renderAll();
+(async () => {
+  // Mostrar pantalla de carga
+  const loader = document.getElementById('gasLoader');
+  if (loader) loader.style.display = 'flex';
+  try {
+    await fetchContent();
+  } catch(e) {}
+  if (loader) loader.style.display = 'none';
+  renderAll();
+})();
 </script>
 </body>
 </html>
