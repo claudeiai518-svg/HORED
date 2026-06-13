@@ -1207,13 +1207,13 @@ function deepMerge(target, source) {
   }
 }
 
-// Envía datos al Apps Script
+// Envía datos al Apps Script via GET (evita CORS en GitHub Pages)
 async function gasPost(body) {
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    const payload = encodeURIComponent(JSON.stringify(body));
+    const res = await fetch(GAS_URL + '?payload=' + payload, {
+      method: 'GET',
+      redirect: 'follow'
     });
     return await res.json();
   } catch(e) {
