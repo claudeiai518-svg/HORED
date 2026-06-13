@@ -750,7 +750,28 @@ footer{position:relative;z-index:1;display:flex;align-items:center;justify-conte
             </select>
           </div>
         </div>
-        <p style="font-family:'EB Garamond',serif;font-size:0.82rem;font-style:italic;color:rgba(245,238,216,0.3);margin-top:-0.5rem;margin-bottom:1rem;">Los cambios se aplican al guardar.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">
+          <div class="adm-field-row">
+            <label>Tamaño del título principal</label>
+            <select id="tf_hero_titleSize" style="background:rgba(139,105,20,0.07);border:1px solid rgba(139,105,20,0.25);border-radius:2px;padding:0.6rem 0.9rem;color:var(--parch);font-family:'EB Garamond',serif;font-size:1rem;width:100%;outline:none;">
+              <option value="clamp(2rem,5vw,4rem)">Pequeño</option>
+              <option value="clamp(2.5rem,6.5vw,5.2rem)">Mediano</option>
+              <option value="clamp(3rem,8vw,6.5rem)">Grande (por defecto)</option>
+              <option value="clamp(3.5rem,9.5vw,7.8rem)">Muy grande</option>
+              <option value="clamp(4rem,11vw,9rem)">Enorme</option>
+            </select>
+          </div>
+          <div class="adm-field-row">
+            <label>Tamaño del subtítulo</label>
+            <select id="tf_hero_subSize" style="background:rgba(139,105,20,0.07);border:1px solid rgba(139,105,20,0.25);border-radius:2px;padding:0.6rem 0.9rem;color:var(--parch);font-family:'EB Garamond',serif;font-size:1rem;width:100%;outline:none;">
+              <option value="clamp(0.85rem,1.6vw,1rem)">Pequeño</option>
+              <option value="clamp(1rem,2vw,1.2rem)">Mediano (por defecto)</option>
+              <option value="clamp(1.1rem,2.4vw,1.4rem)">Grande</option>
+              <option value="clamp(1.25rem,2.8vw,1.6rem)">Muy grande</option>
+            </select>
+          </div>
+        </div>
+        <p style="font-family:'EB Garamond',serif;font-size:0.82rem;font-style:italic;color:rgba(245,238,216,0.3);margin-top:0.5rem;margin-bottom:1rem;">Los cambios se aplican al guardar.</p>
       </div>
       <div class="adm-section">
         <p class="adm-section-title">Textos del Hero</p>
@@ -961,6 +982,8 @@ const DEFAULT_CONTENT = {
   hero: {
     height: "100vh",
     speed: 5000,
+    titleSize: "clamp(3rem,8vw,6.5rem)",
+    subSize: "clamp(1rem,2vw,1.2rem)",
     eyebrow: "Decoraciones y Eventos",
     titleLine1: "Momentos que",
     titleEm: "Perduran",
@@ -1186,6 +1209,8 @@ function renderNav() {
 function renderHero() {
   // Aplica altura del hero como variable CSS
   document.documentElement.style.setProperty('--hero-height', C.hero.height || '100vh');
+  document.documentElement.style.setProperty('--hero-title-size', C.hero.titleSize || 'clamp(3rem,8vw,6.5rem)');
+  document.documentElement.style.setProperty('--hero-sub-size', C.hero.subSize || 'clamp(1rem,2vw,1.2rem)');
   document.getElementById('heroEyebrow').textContent = C.hero.eyebrow;
   document.getElementById('heroTitle').innerHTML = C.hero.titleLine1 + '<br><em>' + C.hero.titleEm + '</em>';
   document.getElementById('heroSubtitle').textContent = C.hero.subtitle;
@@ -1624,6 +1649,8 @@ function buildAdminPanel() {
   // ── HERO ──
   document.getElementById('tf_hero_height').value = C2.hero.height || '100vh';
   document.getElementById('tf_hero_speed').value  = String(C2.hero.speed || 5000);
+  document.getElementById('tf_hero_titleSize').value = C2.hero.titleSize || 'clamp(3rem,8vw,6.5rem)';
+  document.getElementById('tf_hero_subSize').value   = C2.hero.subSize || 'clamp(1rem,2vw,1.2rem)';
   document.getElementById('tf_hero_eyebrow').value    = C2.hero.eyebrow;
   document.getElementById('tf_hero_titleLine1').value = C2.hero.titleLine1;
   document.getElementById('tf_hero_titleEm').value    = C2.hero.titleEm;
@@ -2163,6 +2190,8 @@ function _doSave() {
   saved.hero.ctaPrimaryHref  = v('tf_hero_ctaPrimHref');
   saved.hero.ctaSecondaryText= v('tf_hero_ctaSecText');
   saved.hero.ctaSecondaryHref= v('tf_hero_ctaSecHref');
+  saved.hero.titleSize = v('tf_hero_titleSize');
+  saved.hero.subSize   = v('tf_hero_subSize');
 
   // ── STATS ──
   const stats = [];
