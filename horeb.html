@@ -1174,31 +1174,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycby4Zh5cXKjniumXY4v3X4_z
 // Cache en memoria para la sesión actual (evita peticiones repetidas)
 let _contentCache = null;
 
-// ── JSONP helper (evita CORS en GitHub Pages) ──
-function jsonpRequest(url) {
-  return new Promise((resolve, reject) => {
-    const cbName = '_gasCallback_' + Date.now() + '_' + Math.floor(Math.random()*10000);
-    const script = document.createElement('script');
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error('JSONP timeout'));
-    }, 20000);
-    function cleanup() {
-      clearTimeout(timer);
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-    }
-    window[cbName] = (data) => { cleanup(); resolve(data); };
-    script.onerror = () => { cleanup(); reject(new Error('JSONP script error')); };
-    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
-    document.head.appendChild(script);
-  });
-}
-
 // Carga el contenido desde Apps Script (con fallback a DEFAULT_CONTENT)
 async function fetchContent() {
   try {
-    const json = await jsonpRequest(GAS_URL + '?action=getContent');
+    const res = await fetch(GAS_URL + "?action=getContent");
+    const json = await res.json();
     if (json.ok && json.data) {
       const C = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
       deepMerge(C, json.data);
@@ -1227,12 +1207,15 @@ function deepMerge(target, source) {
   }
 }
 
-// Envía datos al Apps Script via JSONP (evita CORS en GitHub Pages)
+// Envía datos al Apps Script
 async function gasPost(body) {
   try {
-    const payload = encodeURIComponent(JSON.stringify(body));
-    const json = await jsonpRequest(GAS_URL + '?payload=' + payload);
-    return json;
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    return await res.json();
   } catch(e) {
     console.error("Error al guardar en Apps Script:", e);
     return { ok: false, error: e.message };
@@ -2458,48 +2441,14 @@ function _doSave() {
   if(!saved.footer) saved.footer={};
   saved.footer.copy = v('tf_footer_copy');
 
-  // Actualizar cache local y guardar en Apps Script sección por sección
+  // Actualizar cache local y guardar en Apps Script
   deepMerge(_contentCache, saved);
-  (async () => {
-    const secciones = [
-      { section: 'hero',        data: saved.hero },
-      { section: 'stats',       data: saved.stats },
-      { section: 'servicios',   data: saved.servicios },
-      { section: 'videos',      data: saved.videos },
-      { section: 'paquetes',    data: saved.paquetes },
-      { section: 'proceso',     data: saved.proceso },
-      { section: 'testimonios', data: saved.testimonios },
-      { section: 'contratos',   data: saved.contratos },
-      { section: 'contacto',    data: saved.contacto },
-      { section: 'footer',      data: saved.footer },
-    ];
-    // Galería se divide: primero cabecera+categorías, luego imágenes en lotes
-    const galeriaBase = {
-      label: saved.galeria.label, title1: saved.galeria.title1,
-      titleEm: saved.galeria.titleEm, desc: saved.galeria.desc,
-      categories: saved.galeria.categories,
-      categoryOrder: saved.galeria.categoryOrder,
-      catCovers: saved.galeria.catCovers,
-      images: []
-    };
-    secciones.push({ section: 'galeria', data: galeriaBase });
-    // Imágenes en lotes de 20
-    const imgs = saved.galeria.images || [];
-    for (let i = 0; i < imgs.length; i += 20) {
-      const lote = imgs.slice(i, i + 20);
-      secciones.push({ section: 'galeria', data: { images: lote, _append: i > 0 } });
-    }
-    let errores = 0;
-    for (const sec of secciones) {
-      if (!sec.data) continue;
-      try {
-        const r = await gasPost({ action: 'saveSection', section: sec.section, data: sec.data });
-        if (!r.ok) errores++;
-      } catch(e) { errores++; }
-    }
-    if (errores === 0) showToast('✦ Guardado en la nube');
-    else showToast('⚠️ Error al guardar ' + errores + ' sección(es)');
-  })();
+  gasPost({ action: 'saveAll', data: saved })
+    .then(r => {
+      if (r.ok) showToast('✦ Guardado en la nube');
+      else showToast('⚠️ Error al guardar: ' + (r.error || ''));
+    })
+    .catch(() => showToast('⚠️ Sin conexión al servidor'));
 }
 
 function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
